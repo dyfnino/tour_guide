@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>导游考证与特产销售小程序</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1677ff',
+                        secondary: '#ff7d00',
+                        success: '#52c41a',
+                        warning: '#faad14',
+                        danger: '#ff4d4f',
+                        gray: {
+                            100: '#f5f5f5',
+                            200: '#e5e5e5',
+                            300: '#d9d9d9',
+                            400: '#bfbfbf',
+                            500: '#8c8c8c',
+                            600: '#595959',
+                            700: '#434343',
+                            800: '#262626',
+                            900: '#1f1f1f',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['PingFang SC', 'Helvetica Neue', 'Arial', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .scrollbar-hidden::-webkit-scrollbar {
+                display: none;
+            }
+            .scrollbar-hidden {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .tabbar-active {
+                color: theme('colors.primary');
+                font-weight: 500;
+            }
+            .card-shadow {
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            }
+            /* 轮播相关样式 */
+            .carousel-item {
+                display: none;
+            }
+            .carousel-item.active {
+                display: block;
+            }
+            .carousel-dot.active {
+                background-color: theme('colors.primary');
+                width: 20px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans text-gray-800 antialiased">
+    <!-- 页面容器 -->
+    <div id="app" class="relative h-screen w-screen overflow-hidden bg-gray-100">
+        <!-- 首页 -->
+        <div id="home-page" class="h-full w-full overflow-y-auto scrollbar-hidden">
+            <!-- 顶部导航 -->
+            <header class="sticky top-0 z-10 bg-white shadow-sm">
+                <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+                    <h1 class="text-xl font-bold text-gray-800">导游服务平台</h1>
+                    <div class="flex items-center space-x-4">
+                        <button class="text-gray-600"><i class="fa fa-search text-lg"></i></button>
+                        <button class="text-gray-600"><i class="fa fa-shopping-cart text-lg"></i></button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- 轮播图 - 西安名胜古迹和特产 -->
+            <div class="relative h-40 md:h-56 overflow-hidden">
+                <!-- 轮播图片容器 -->
+                <div class="carousel-container h-full w-full">
+                    <!-- 兵马俑 -->
+                    <div class="carousel-item active h-full w-full">
+                        <img src="https://picsum.photos/id/1036/800/400" alt="西安兵马俑" class="h-full w-full object-cover">
+                        <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
+                            <span class="text-white text-xl font-bold">西安兵马俑 - 世界文化遗产</span>
+                        </div>
+                    </div>
+                    <!-- 大雁塔 -->
+                    <div class="carousel-item h-full w-full">
+                        <img src="https://picsum.photos/id/1039/800/400" alt="西安大雁塔" class="h-full w-full object-cover">
+                        <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
+                            <span class="text-white text-xl font-bold">大雁塔 - 唐代建筑瑰宝</span>
+                        </div>
+                    </div>
+                    <!-- 西安城墙 -->
+                    <div class="carousel-item h-full w-full">
+                        <img src="https://picsum.photos/id/1018/800/400" alt="西安城墙" class="h-full w-full object-cover">
+                        <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
+                            <span class="text-white text-xl font-bold">西安城墙 - 明代古城墙</span>
+                        </div>
+                    </div>
+                    <!-- 西安特产 -->
+                    <div class="carousel-item h-full w-full">
+                        <img src="https://picsum.photos/id/292/800/400" alt="西安特色美食" class="h-full w-full object-cover">
+                        <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
+                            <span class="text-white text-xl font-bold">西安特产 - 肉夹馍 泡馍 凉皮</span>
+                        </div>
+                    </div>
+                    <!-- 文创产品 -->
+                    <div class="carousel-item h-full w-full">
+                        <img src="https://picsum.photos/id/401/800/400" alt="西安文创产品" class="h-full w-full object-cover">
+                        <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
+                            <span class="text-white text-xl font-bold">西安文创 - 兵马俑纪念品</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 轮播控制按钮 -->
+                <button class="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/30 text-white flex items-center justify-center z-10 carousel-prev">
+                    <i class="fa fa-angle-left text-lg"></i>
+                </button>
+                <button class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/30 text-white flex items-center justify-center z-10 carousel-next">
+                    <i class="fa fa-angle-right text-lg"></i>
+                </button>
+                
+                <!-- 轮播指示器 -->
+                <div class="absolute bottom-3 left-0 right-0 flex justify-center gap-2 z-10">
+                    <span class="carousel-dot active h-2 rounded-full transition-all duration-300"></span>
+                    <span class="carousel-dot h-2 w-4 bg-white/60 rounded-full transition-all duration-300"></span>
+                    <span class="carousel-dot h-2 w-4 bg-white/60 rounded-full transition-all duration-300"></span>
+                    <span class="carousel-dot h-2 w-4 bg-white/60 rounded-full transition-all duration-300"></span>
+                    <span class="carousel-dot h-2 w-4 bg-white/60 rounded-full transition-all duration-300"></span>
+                </div>
+            </div>
+
+            <!-- 功能入口 -->
+            <div class="bg-white py-4 px-4">
+                <div class="grid grid-cols-4 gap-4">
+                    <a href="#guide-cert" class="flex flex-col items-center p-2">
+                        <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                            <i class="fa fa-graduation-cap text-primary text-2xl"></i>
+                        </div>
+                        <span class="text-sm text-gray-700">导游考证</span>
+                    </a>
+                    <a href="#specialty" class="flex flex-col items-center p-2">
+                        <div class="w-16 h-16 rounded-full bg-secondary/10 flex items-center justify-center mb-2">
+                            <i class="fa fa-shopping-bag text-secondary text-2xl"></i>
+                        </div>
+                        <span class="text-sm text-gray-700">特产商城</span>
+                    </a>
+                    <div class="flex flex-col items-center p-2">
+                        <div class="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mb-2">
+                            <i class="fa fa-live text-success text-2xl"></i>
+                        </div>
+                        <span class="text-sm text-gray-700">直播课堂</span>
+                    </div>
+                    <div class="flex flex-col items-center p-2">
+                        <div class="w-16 h-16 rounded-full bg-warning/10 flex items-center justify-center mb-2">
+                            <i class="fa fa-bar-chart text-warning text-2xl"></i>
+                        </div>
+                        <span class="text-sm text-gray-700">AI测评</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 推荐课程 -->
+            <div class="bg-white mt-4 px-4 py-3">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-lg font-semibold text-gray-800">推荐课程</h2>
+                    <a href="#" class="text-primary text-sm">更多 <i class="fa fa-angle-right"></i></a>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="card-shadow rounded-lg overflow-hidden">
+                        <img src="https://picsum.photos/300/180?random=1" alt="导游基础知识" class="w-full h-28 object-cover">
+                        <div class="p-3">
+                            <h3 class="text-sm font-medium text-gray-800 mb-1">导游基础知识精讲</h3>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs text-primary">免费</span>
+                                <span class="text-xs text-gray-500">2000+人已学</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-shadow rounded-lg overflow-hidden">
+                        <img src="https://picsum.photos/300/180?random=2" alt="导游业务" class="w-full h-28 object-cover">
+                        <div class="p-3">
+                            <h3 class="text-sm font-medium text-gray-800 mb-1">导游业务能力提升</h3>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs text-primary">¥99</span>
+                                <span class="text-xs text-gray-500">1500+人已学</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 热门特产 -->
+            <div class="bg-white mt-4 px-4 py-3 mb-20">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-lg font-semibold text-gray-800">热门特产</h2>
+                    <a href="#" class="text-primary text-sm">更多 <i class="fa fa-angle-right"></i></a>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="card-shadow rounded-lg overflow-hidden">
+                        <img src="https://picsum.photos/300/180?random=3" alt="特色糕点" class="w-full h-28 object-cover">
+                        <div class="p-3">
+                            <h3 class="text-sm font-medium text-gray-800 mb-1">手工特色糕点礼盒</h3>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs text-danger font-bold">¥88</span>
+                                <span class="text-xs text-gray-500">热销</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-shadow rounded-lg overflow-hidden">
+                        <img src="https://picsum.photos/300/180?random=4" alt="文创产品" class="w-full h-28 object-cover">
+                        <div class="p-3">
+                            <h3 class="text-sm font-medium text-gray-800 mb-1">地方特色文创书签</h3>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs text-danger font-bold">¥39</span>
+                                <span class="text-xs text-gray-500">新品</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 导游考证页面 -->
+        <div id="guide-cert-page" class="hidden h-full w-full overflow-y-auto scrollbar-hidden">
+            <!-- 顶部导航 -->
+            <header class="sticky top-0 z-10 bg-white shadow-sm">
+                <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+                    <button class="text-gray-600" onclick="switchPage('home-page')">
+                        <i class="fa fa-angle-left text-lg"></i>
+                    </button>
+                    <h1 class="text-xl font-bold text-gray-800">导游考证</h1>
+                    <div class="w-8"></div>
+                </div>
+            </header>
+
+            <!-- 子导航 -->
+            <div class="bg-white shadow-sm sticky top-16 z-10">
+                <div class="flex overflow-x-auto scrollbar-hidden">
+                    <button class="flex-1 py-3 text-center text-primary border-b-2 border-primary font-medium">网课点播</button>
+                    <button class="flex-1 py-3 text-center text-gray-600">考试刷题</button>
+                    <button class="flex-1 py-3 text-center text-gray-600">模拟考试</button>
+                    <button class="flex-1 py-3 text-center text-gray-600">直播网课</button>
+                    <button class="flex-1 py-3 text-center text-gray-600">AI测评</button>
+                </div>
+            </div>
+
+            <!-- 课程列表 -->
+            <div class="p-4">
+                <!-- 课程分类 -->
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <button class="px-3 py-1 bg-primary text-white rounded-full text-xs">全部</button>
+                    <button class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-xs">基础知识</button>
+                    <button class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-xs">导游业务</button>
+                    <button class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-xs">政策法规</button>
+                    <button class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-xs">地方导游</button>
+                </div>
+
+                <!-- 课程列表 -->
+                <div class="space-y-4 mb-20">
+                    <div class="bg-white rounded-lg overflow-hidden card-shadow">
+                        <div class="flex p-3">
+                            <img src="https://picsum.photos/120/80?random=5" alt="课程封面" class="w-24 h-16 object-cover rounded">
+                            <div class="ml-3 flex-1">
+                                <h3 class="text-sm font-medium text-gray-800 mb-1">导游资格证考试全程班</h3>
+                                <p class="text-xs text-gray-500 mb-1">36课时 | 适合零基础</p>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-primary text-sm font-bold">¥199</span>
+                                    <span class="text-xs text-gray-500">98%好评</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg overflow-hidden card-shadow">
+                        <div class="flex p-3">
+                            <img src="https://picsum.photos/120/80?random=6" alt="课程封面" class="w-24 h-16 object-cover rounded">
+                            <div class="ml-3 flex-1">
+                                <h3 class="text-sm font-medium text-gray-800 mb-1">导游词创作与讲解技巧</h3>
+                                <p class="text-xs text-gray-500 mb-1">18课时 | 进阶提升</p>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-primary text-sm font-bold">¥99</span>
+                                    <span class="text-xs text-gray-500">96%好评</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg overflow-hidden card-shadow">
+                        <div class="flex p-3">
+                            <img src="https://picsum.photos/120/80?random=7" alt="课程封面" class="w-24 h-16 object-cover rounded">
+                            <div class="ml-3 flex-1">
+                                <h3 class="text-sm font-medium text-gray-800 mb-1">政策法规高频考点解析</h3>
+                                <p class="text-xs text-gray-500 mb-1">12课时 | 考点精讲</p>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-primary text-sm font-bold">¥69</span>
+                                    <span class="text-xs text-gray-500">99%好评</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 特产销售页面 -->
+        <div id="specialty-page" class="hidden h-full w-full overflow-y-auto scrollbar-hidden">
+            <!-- 顶部导航 -->
+            <header class="sticky top-0 z-10 bg-white shadow-sm">
+                <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+                    <button class="text-gray-600" onclick="switchPage('home-page')">
+                        <i class="fa fa-angle-left text-lg"></i>
+                    </button>
+                    <h1 class="text-xl font-bold text-gray-800">特产商城</h1>
+                    <button class="text-gray-600"><i class="fa fa-search text-lg"></i></button>
+                </div>
+            </header>
+
+            <!-- 分类导航 -->
+            <div class="bg-white shadow-sm sticky top-16 z-10">
+                <div class="flex overflow-x-auto scrollbar-hidden">
+                    <button class="flex-1 py-3 text-center text-primary border-b-2 border-primary font-medium">全部</button>
+                    <button class="flex-1 py-3 text-center text-gray-600">特色食品</button>
+                    <button class="flex-1 py-3 text-center text-gray-600">文创产品</button>
+                    <button class="flex-1 py-3 text-center text-gray-600">手工艺品</button>
+                    <button class="flex-1 py-3 text-center text-gray-600">地方特产</button>
+                </div>
+            </div>
+
+            <!-- 产品列表 -->
+            <div class="p-4">
+                <div class="grid grid-cols-2 gap-3 mb-20">
+                    <div class="bg-white rounded-lg overflow-hidden card-shadow">
+                        <img src="https://picsum.photos/300/300?random=8" alt="特产1" class="w-full h-40 object-cover">
+                        <div class="p-3">
+                            <h3 class="text-sm font-medium text-gray-800 mb-1">地方特色腊肉礼盒</h3>
+                            <div class="flex justify-between items-center mt-2">
+                                <span class="text-danger text-sm font-bold">¥168</span>
+                                <button class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                    <i class="fa fa-shopping-cart"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg overflow-hidden card-shadow">
+                        <img src="https://picsum.photos/300/300?random=9" alt="特产2" class="w-full h-40 object-cover">
+                        <div class="p-3">
+                            <h3 class="text-sm font-medium text-gray-800 mb-1">手工刺绣书签套装</h3>
+                            <div class="flex justify-between items-center mt-2">
+                                <span class="text-danger text-sm font-bold">¥89</span>
+                                <button class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                    <i class="fa fa-shopping-cart"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg overflow-hidden card-shadow">
+                        <img src="https://picsum.photos/300/300?random=10" alt="特产3" class="w-full h-40 object-cover">
+                        <div class="p-3">
+                            <h3 class="text-sm font-medium text-gray-800 mb-1">传统工艺陶瓷茶具</h3>
+                            <div class="flex justify-between items-center mt-2">
+                                <span class="text-danger text-sm font-bold">¥299</span>
+                                <button class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                    <i class="fa fa-shopping-cart"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg overflow-hidden card-shadow">
+                        <img src="https://picsum.photos/300/300?random=11" alt="特产4" class="w-full h-40 object-cover">
+                        <div class="p-3">
+                            <h3 class="text-sm font-medium text-gray-800 mb-1">高山云雾茶礼盒装</h3>
+                            <div class="flex justify-between items-center mt-2">
+                                <span class="text-danger text-sm font-bold">¥198</span>
+                                <button class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                    <i class="fa fa-shopping-cart"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 个人中心页面 -->
+        <div id="profile-page" class="hidden h-full w-full overflow-y-auto scrollbar-hidden">
+            <!-- 顶部导航 -->
+            <header class="sticky top-0 z-10 bg-white shadow-sm">
+                <div class="container mx-auto px-4 py-3 flex items-center justify-center">
+                    <h1 class="text-xl font-bold text-gray-800">我的</h1>
+                </div>
+            </header>
+
+            <!-- 用户信息 -->
+            <div class="bg-primary text-white py-8 px-4">
+                <div class="flex items-center">
+                    <img src="https://picsum.photos/80/80?random=12" alt="头像" class="w-16 h-16 rounded-full border-2 border-white">
+                    <div class="ml-4">
+                        <h2 class="text-lg font-medium">游客123456</h2>
+                        <p class="text-sm opacity-80 mt-1">点击登录/注册</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 功能入口 -->
+            <div class="bg-white mt-4">
+                <div class="border-b border-gray-200">
+                    <a href="#" class="flex items-center justify-between p-4">
+                        <div class="flex items-center">
+                            <i class="fa fa-graduation-cap text-primary text-xl mr-3"></i>
+                            <span class="text-gray-800">我的课程</span>
+                        </div>
+                        <i class="fa fa-angle-right text-gray-400"></i>
+                    </a>
+                </div>
+                <div class="border-b border-gray-200">
+                    <a href="#" class="flex items-center justify-between p-4">
+                        <div class="flex items-center">
+                            <i class="fa fa-shopping-bag text-secondary text-xl mr-3"></i>
+                            <span class="text-gray-800">我的订单</span>
+                        </div>
+                        <i class="fa fa-angle-right text-gray-400"></i>
+                    </a>
+                </div>
+                <div class="border-b border-gray-200">
+                    <a href="#" class="flex items-center justify-between p-4">
+                        <div class="flex items-center">
+                            <i class="fa fa-share-alt text-success text-xl mr-3"></i>
+                            <span class="text-gray-800">分销中心</span>
+                        </div>
+                        <i class="fa fa-angle-right text-gray-400"></i>
+                    </a>
+                </div>
+                <div class="border-b border-gray-200">
+                    <a href="#" class="flex items-center justify-between p-4">
+                        <div class="flex items-center">
+                            <i class="fa fa-credit-card text-warning text-xl mr-3"></i>
+                            <span class="text-gray-800">我的钱包</span>
+                        </div>
+                        <i class="fa fa-angle-right text-gray-400"></i>
+                    </a>
+                </div>
+                <a href="#" class="flex items-center justify-between p-4">
+                    <div class="flex items-center">
+                        <i class="fa fa-cog text-gray-600 text-xl mr-3"></i>
+                        <span class="text-gray-800">设置</span>
+                    </div>
+                    <i class="fa fa-angle-right text-gray-400"></i>
+                </a>
+            </div>
+
+            <!-- 帮助中心 -->
+            <div class="bg-white mt-4 p-4 mb-20">
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-800">帮助中心</span>
+                    <i class="fa fa-angle-right text-gray-400"></i>
+                </div>
+                <div class="mt-4 grid grid-cols-3 gap-2 text-center">
+                    <div>
+                        <i class="fa fa-headphones text-xl text-gray-600 mb-2"></i>
+                        <p class="text-xs text-gray-700">在线客服</p>
+                    </div>
+                    <div>
+                        <i class="fa fa-question-circle text-xl text-gray-600 mb-2"></i>
+                        <p class="text-xs text-gray-700">常见问题</p>
+                    </div>
+                    <div>
+                        <i class="fa fa-phone text-xl text-gray-600 mb-2"></i>
+                        <p class="text-xs text-gray-700">联系我们</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部TabBar -->
+        <footer class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-20">
+            <div class="flex">
+                <button id="tab-home" class="flex-1 py-2 flex flex-col items-center justify-center tabbar-active" onclick="switchPage('home-page')">
+                    <i class="fa fa-home text-lg mb-1"></i>
+                    <span class="text-xs">首页</span>
+                </button>
+                <button id="tab-guide" class="flex-1 py-2 flex flex-col items-center justify-center" onclick="switchPage('guide-cert-page')">
+                    <i class="fa fa-graduation-cap text-lg mb-1 text-gray-500"></i>
+                    <span class="text-xs text-gray-500">导游考证</span>
+                </button>
+                <button id="tab-specialty" class="flex-1 py-2 flex flex-col items-center justify-center" onclick="switchPage('specialty-page')">
+                    <i class="fa fa-shopping-bag text-lg mb-1 text-gray-500"></i>
+                    <span class="text-xs text-gray-500">特产商城</span>
+                </button>
+                <button id="tab-profile" class="flex-1 py-2 flex flex-col items-center justify-center" onclick="switchPage('profile-page')">
+                    <i class="fa fa-user text-lg mb-1 text-gray-500"></i>
+                    <span class="text-xs text-gray-500">我的</span>
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // 页面切换函数
+        function switchPage(pageId) {
+            // 隐藏所有页面
+            document.querySelectorAll('#app > div[id$="-page"]').forEach(page => {
+                page.classList.add('hidden');
+            });
+            
+            // 显示目标页面
+            document.getElementById(pageId).classList.remove('hidden');
+            
+            // 更新TabBar状态
+            document.querySelectorAll('footer button').forEach(tab => {
+                tab.classList.remove('tabbar-active');
+                tab.querySelector('i').classList.add('text-gray-500');
+                tab.querySelector('span').classList.add('text-gray-500');
+            });
+            
+            // 激活对应Tab
+            let tabId = 'tab-' + pageId.replace('-page', '');
+            if (document.getElementById(tabId)) {
+                document.getElementById(tabId).classList.add('tabbar-active');
+                document.getElementById(tabId).querySelector('i').classList.remove('text-gray-500');
+                document.getElementById(tabId).querySelector('span').classList.remove('text-gray-500');
+            }
+        }
+
+        // 初始化页面跳转链接
+        document.addEventListener('DOMContentLoaded', function() {
+            // 首页的导游考证入口
+            document.querySelector('a[href="#guide-cert"]').addEventListener('click', function(e) {
+                e.preventDefault();
+                switchPage('guide-cert-page');
+            });
+            
+            // 首页的特产商城入口
+            document.querySelector('a[href="#specialty"]').addEventListener('click', function(e) {
+                e.preventDefault();
+                switchPage('specialty-page');
+            });
+
+            // 轮播图功能实现
+            const carouselItems = document.querySelectorAll('.carousel-item');
+            const carouselDots = document.querySelectorAll('.carousel-dot');
+            const prevBtn = document.querySelector('.carousel-prev');
+            const nextBtn = document.querySelector('.carousel-next');
+            let currentIndex = 0;
+            let carouselInterval;
+
+            // 切换轮播项
+            function showSlide(index) {
+                // 重置所有轮播项和指示器
+                carouselItems.forEach(item => item.classList.remove('active'));
+                carouselDots.forEach(dot => dot.classList.remove('active'));
+                
+                // 处理边界
+                if (index >= carouselItems.length) currentIndex = 0;
+                else if (index < 0) currentIndex = carouselItems.length - 1;
+                else currentIndex = index;
+                
+                // 激活当前项
+                carouselItems[currentIndex].classList.add('active');
+                carouselDots[currentIndex].classList.add('active');
+            }
+
+            // 下一张
+            function nextSlide() {
+                showSlide(currentIndex + 1);
+            }
+
+            // 上一张
+            function prevSlide() {
+                showSlide(currentIndex - 1);
+            }
+
+            // 点击指示器切换
+            carouselDots.forEach((dot, index) => {
+                dot.addEventListener('click', () => {
+                    showSlide(index);
+                    resetCarouselInterval();
+                });
+            });
+
+            // 按钮点击事件
+            prevBtn.addEventListener('click', () => {
+                prevSlide();
+                resetCarouselInterval();
+            });
+
+            nextBtn.addEventListener('click', () => {
+                nextSlide();
+                resetCarouselInterval();
+            });
+
+            // 自动轮播
+            function startCarousel() {
+                carouselInterval = setInterval(nextSlide, 3000);
+            }
+
+            // 重置自动轮播
+            function resetCarouselInterval() {
+                clearInterval(carouselInterval);
+                startCarousel();
+            }
+
+            // 启动轮播
+            startCarousel();
+        });
+    </script>
+</body>
+</html>

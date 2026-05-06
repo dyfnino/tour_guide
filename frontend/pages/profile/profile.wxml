@@ -1,0 +1,57 @@
+<view class="profile-container">
+  <!-- 用户信息 -->
+  <view class="user-info">
+    <image src="https://picsum.photos/80/80?random=12" class="avatar" bindtap="onLoginTap"></image>
+    <view class="user-details">
+      <text class="user-name" bindtap="onLoginTap">{{userInfo.name}}</text>
+      <text class="user-action" bindtap="onLoginTap">{{userInfo.action}}</text>
+    </view>
+  </view>
+
+  <!-- 功能入口 -->
+  <view class="function-section">
+    <view class="function-item" bindtap="onMyCoursesTap">
+      <view class="function-icon function-icon-primary">
+        <text class="icon-text">📚</text>
+      </view>
+      <text class="function-name">我的课程</text>
+      <text class="function-arrow">›</text>
+    </view>
+    <view class="function-item" bindtap="onMyOrdersTap">
+      <view class="function-icon function-icon-secondary">
+        <text class="icon-text">🛍️</text>
+      </view>
+      <text class="function-name">我的订单</text>
+      <text class="function-arrow">›</text>
+    </view>
+    <view class="function-item" bindtap="onDistributionTap">
+      <view class="function-icon function-icon-success">
+        <text class="icon-text">📤</text>
+      </view>
+      <text class="function-name">分销中心</text>
+      <text class="function-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 帮助中心 -->
+  <view class="help-section">
+    <view class="help-header">
+      <text class="help-title">帮助中心</text>
+      <text class="help-arrow">›</text>
+    </view>
+    <view class="help-content">
+      <view class="help-item" bindtap="onCustomerServiceTap">
+        <text class="help-icon">🎧</text>
+        <text class="help-name">在线客服</text>
+      </view>
+      <view class="help-item" bindtap="onFAQTap">
+        <text class="help-icon">❓</text>
+        <text class="help-name">常见问题</text>
+      </view>
+      <view class="help-item" bindtap="onContactUsTap">
+        <text class="help-icon">📞</text>
+        <text class="help-name">联系我们</text>
+      </view>
+    </view>
+  </view>
+</view>

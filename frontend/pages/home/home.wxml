@@ -1,0 +1,130 @@
+<view class="home-container">
+  <!-- 顶部导航 -->
+  <view class="header">
+    <view class="header-content">
+      <text class="header-title">导游服务平台</text>
+      <view class="header-right">
+        <view class="header-icon" bindtap="onSearchTap">
+          <text class="icon-text">🔍</text>
+        </view>
+        <view class="header-icon" bindtap="onCartTap">
+          <text class="icon-text">🛒</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 轮播图 -->
+  <view class="carousel-container">
+    <swiper indicator-dots="{{true}}" autoplay="{{true}}" interval="3000" duration="500" circular="{{true}}" indicator-active-color="#1677ff">
+      <swiper-item>
+        <image src="https://picsum.photos/id/1036/800/400" class="carousel-image" mode="aspectFill"></image>
+        <view class="carousel-text">西安兵马俑 - 世界文化遗产</view>
+      </swiper-item>
+      <swiper-item>
+        <image src="https://picsum.photos/id/1039/800/400" class="carousel-image" mode="aspectFill"></image>
+        <view class="carousel-text">大雁塔 - 唐代建筑瑰宝</view>
+      </swiper-item>
+      <swiper-item>
+        <image src="https://picsum.photos/id/1018/800/400" class="carousel-image" mode="aspectFill"></image>
+        <view class="carousel-text">西安城墙 - 明代古城墙</view>
+      </swiper-item>
+      <swiper-item>
+        <image src="https://picsum.photos/id/292/800/400" class="carousel-image" mode="aspectFill"></image>
+        <view class="carousel-text">西安特产 - 肉夹馍 泡馍 凉皮</view>
+      </swiper-item>
+      <swiper-item>
+        <image src="https://picsum.photos/id/401/800/400" class="carousel-image" mode="aspectFill"></image>
+        <view class="carousel-text">西安文创 - 兵马俑纪念品</view>
+      </swiper-item>
+    </swiper>
+  </view>
+
+  <!-- 功能入口 -->
+  <view class="function-entry">
+    <view class="entry-item" bindtap="navigateToGuideCert">
+      <view class="entry-icon entry-icon-primary">
+        <text class="icon-text">📚</text>
+      </view>
+      <text class="entry-title">导游考证</text>
+    </view>
+    <view class="entry-item" bindtap="navigateToSpecialty">
+      <view class="entry-icon entry-icon-secondary">
+        <text class="icon-text">🛍️</text>
+      </view>
+      <text class="entry-title">特产商城</text>
+    </view>
+    <view class="entry-item" bindtap="navigateToLive">
+      <view class="entry-icon entry-icon-success">
+        <text class="icon-text">📺</text>
+      </view>
+      <text class="entry-title">直播课堂</text>
+    </view>
+    <view class="entry-item" bindtap="navigateToAiTest">
+      <view class="entry-icon entry-icon-warning">
+        <text class="icon-text">🤖</text>
+      </view>
+      <text class="entry-title">AI测评</text>
+    </view>
+  </view>
+
+  <!-- 推荐课程 -->
+  <view class="course-section">
+    <view class="section-header">
+      <text class="section-title">推荐课程</text>
+      <text class="section-more" bindtap="onCourseMoreTap">更多 <text class="arrow">›</text></text>
+    </view>
+    <view class="course-list">
+      <view class="course-item card-shadow" bindtap="onCourseTap">
+        <image src="https://picsum.photos/300/180?random=1" class="course-image" mode="aspectFill"></image>
+        <view class="course-info">
+          <text class="course-name">导游基础知识精讲</text>
+          <view class="course-footer">
+            <text class="course-price text-primary">免费</text>
+            <text class="course-students">2000+人已学</text>
+          </view>
+        </view>
+      </view>
+      <view class="course-item card-shadow" bindtap="onCourseTap">
+        <image src="https://picsum.photos/300/180?random=2" class="course-image" mode="aspectFill"></image>
+        <view class="course-info">
+          <text class="course-name">导游业务能力提升</text>
+          <view class="course-footer">
+            <text class="course-price text-primary">¥99</text>
+            <text class="course-students">1500+人已学</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 热门特产 -->
+  <view class="specialty-section">
+    <view class="section-header">
+      <text class="section-title">热门特产</text>
+      <text class="section-more" bindtap="onSpecialtyMoreTap">更多 <text class="arrow">›</text></text>
+    </view>
+    <view class="specialty-list">
+      <view class="specialty-item card-shadow" bindtap="onSpecialtyTap">
+        <image src="https://picsum.photos/300/180?random=3" class="specialty-image" mode="aspectFill"></image>
+        <view class="specialty-info">
+          <text class="specialty-name">手工特色糕点礼盒</text>
+          <view class="specialty-footer">
+            <text class="specialty-price text-danger">¥88</text>
+            <text class="specialty-tag">热销</text>
+          </view>
+        </view>
+      </view>
+      <view class="specialty-item card-shadow" bindtap="onSpecialtyTap">
+        <image src="https://picsum.photos/300/180?random=4" class="specialty-image" mode="aspectFill"></image>
+        <view class="specialty-info">
+          <text class="specialty-name">地方特色文创书签</text>
+          <view class="specialty-footer">
+            <text class="specialty-price text-danger">¥39</text>
+            <text class="specialty-tag">新品</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

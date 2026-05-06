@@ -1,0 +1,79 @@
+<view class="order-detail-container">
+  <!-- 订单状态 -->
+  <view class="order-status-section">
+    <text class="status-icon {{order.status}}">{{getStatusIcon(order.status)}}</text>
+    <text class="status-text">{{getStatusText(order.status)}}</text>
+  </view>
+
+  <!-- 订单信息 -->
+  <view class="order-info-section">
+    <view class="info-item">
+      <text class="info-label">订单号:</text>
+      <text class="info-value">{{order.id}}</text>
+    </view>
+    <view class="info-item">
+      <text class="info-label">下单时间:</text>
+      <text class="info-value">{{order.createTime}}</text>
+    </view>
+    <view class="info-item">
+      <text class="info-label">支付方式:</text>
+      <text class="info-value">{{order.paymentMethod || '未支付'}}</text>
+    </view>
+  </view>
+
+  <!-- 收货信息 -->
+  <view class="shipping-info-section">
+    <view class="section-header">
+      <text class="header-icon">📦</text>
+      <text class="header-title">收货信息</text>
+    </view>
+    <view class="shipping-info">
+      <text class="recipient">{{order.recipient || '未设置'}}</text>
+      <text class="address">{{order.address || '未设置'}}</text>
+      <text class="contact">{{order.phone || '未设置'}}</text>
+    </view>
+  </view>
+
+  <!-- 商品信息 -->
+  <view class="products-section">
+    <view class="section-header">
+      <text class="header-icon">🛍️</text>
+      <text class="header-title">商品信息</text>
+    </view>
+    <view class="product-list">
+      <view class="product-item" wx:for="{{order.products}}" wx:key="productId" wx:for-item="product">
+        <image src="{{product.image}}" class="product-image" mode="aspectFill"></image>
+        <view class="product-info">
+          <text class="product-name">{{product.name}}</text>
+          <view class="product-price-quantity">
+            <text class="product-price">{{product.price}}</text>
+            <text class="product-quantity">x{{product.quantity}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 价格信息 -->
+  <view class="price-section">
+    <view class="price-item">
+      <text class="price-label">商品总价:</text>
+      <text class="price-value">{{order.totalPrice}}</text>
+    </view>
+    <view class="price-item">
+      <text class="price-label">运费:</text>
+      <text class="price-value">{{order.shippingFee || '¥0'}}</text>
+    </view>
+    <view class="price-item total">
+      <text class="price-label">实付金额:</text>
+      <text class="price-value total">{{order.totalPrice}}</text>
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="action-buttons">
+    <button wx:if="order.status === 'unpaid'" class="btn-primary" bindtap="payOrder">去支付</button>
+    <button wx:if="order.status === 'paid'" class="btn-secondary" bindtap="confirmReceipt">确认收货</button>
+    <button class="btn-tertiary" bindtap="contactService">联系客服</button>
+  </view>
+</view>

@@ -1,0 +1,147 @@
+/* 个人中心页面样式 */
+.profile-container {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+/* 用户信息 */
+.user-info {
+  background-color: #1677ff;
+  padding: 64rpx 32rpx;
+  display: flex;
+  align-items: center;
+  color: #fff;
+}
+
+.avatar {
+  width: 128rpx;
+  height: 128rpx;
+  border-radius: 50%;
+  border: 4rpx solid #fff;
+}
+
+.user-details {
+  margin-left: 32rpx;
+}
+
+.user-name {
+  font-size: 32rpx;
+  font-weight: 500;
+  margin-bottom: 8rpx;
+  display: block;
+}
+
+.user-action {
+  font-size: 24rpx;
+  opacity: 0.8;
+  display: block;
+}
+
+/* 功能入口 */
+.function-section {
+  background-color: #fff;
+  margin-top: 32rpx;
+}
+
+.function-item {
+  display: flex;
+  align-items: center;
+  padding: 32rpx 24rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.function-item:last-child {
+  border-bottom: none;
+}
+
+.function-icon {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 24rpx;
+}
+
+.function-icon-primary {
+  background-color: rgba(22, 119, 255, 0.1);
+}
+
+.function-icon-secondary {
+  background-color: rgba(255, 125, 0, 0.1);
+}
+
+.function-icon-success {
+  background-color: rgba(82, 196, 26, 0.1);
+}
+
+.function-icon-warning {
+  background-color: rgba(250, 173, 20, 0.1);
+}
+
+.function-icon-gray {
+  background-color: rgba(140, 140, 140, 0.1);
+}
+
+.icon-text {
+  font-size: 32rpx;
+}
+
+.function-name {
+  flex: 1;
+  font-size: 28rpx;
+  color: #262626;
+}
+
+.function-arrow {
+  font-size: 32rpx;
+  color: #8c8c8c;
+}
+
+/* 帮助中心 */
+.help-section {
+  background-color: #fff;
+  margin-top: 32rpx;
+  margin-bottom: 100rpx;
+}
+
+.help-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 32rpx 24rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.help-title {
+  font-size: 28rpx;
+  color: #262626;
+}
+
+.help-arrow {
+  font-size: 32rpx;
+  color: #8c8c8c;
+}
+
+.help-content {
+  padding: 32rpx 0;
+  display: flex;
+  justify-content: space-around;
+}
+
+.help-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.help-icon {
+  font-size: 48rpx;
+  margin-bottom: 16rpx;
+}
+
+.help-name {
+  font-size: 24rpx;
+  color: #595959;
+}

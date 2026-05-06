@@ -1,0 +1,66 @@
+<view class="ai-test-container">
+  <!-- AI测评介绍 -->
+  <view class="ai-intro">
+    <view class="ai-banner">
+      <image src="https://picsum.photos/800/400?random=16" class="ai-image" mode="aspectFill"></image>
+      <view class="ai-overlay">
+        <text class="ai-title">AI导游测评</text>
+        <text class="ai-subtitle">智能评估，精准提升</text>
+      </view>
+    </view>
+    <view class="ai-description">
+      <text class="description-text">使用先进的AI技术，为您提供专业的导游能力测评服务。通过模拟考试、面试问答等方式，全面评估您的导游技能水平，并提供个性化的提升建议。</text>
+    </view>
+  </view>
+
+  <!-- 测评类型 -->
+  <view class="test-types">
+    <view class="test-header">
+      <text class="test-title">测评类型</text>
+    </view>
+    <view class="test-list">
+      <view class="test-item card-shadow" bindtap="onTestTypeTap">
+        <view class="test-icon">📝</view>
+        <text class="test-name">理论知识测评</text>
+        <text class="test-desc">测试导游基础知识掌握程度</text>
+      </view>
+      <view class="test-item card-shadow" bindtap="onTestTypeTap">
+        <view class="test-icon">🎤</view>
+        <text class="test-name">导游词讲解测评</text>
+        <text class="test-desc">评估导游词创作与讲解能力</text>
+      </view>
+      <view class="test-item card-shadow" bindtap="onTestTypeTap">
+        <view class="test-icon">💬</view>
+        <text class="test-name">面试模拟测评</text>
+        <text class="test-desc">模拟导游面试场景，评估应对能力</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- AI对话区域 -->
+  <view class="chat-section">
+    <view class="chat-header">
+      <text class="chat-title">AI助手</text>
+      <text class="chat-status">在线</text>
+    </view>
+    <view class="chat-container">
+      <!-- 对话消息 -->
+      <view class="message message-ai">
+        <view class="message-avatar">🤖</view>
+        <view class="message-content">
+          <text class="message-text">你好！我是你的AI导游助手，有什么可以帮助你的吗？</text>
+        </view>
+      </view>
+      <view class="message message-user" wx:for="{{chatMessages}}" wx:key="index">
+        <view class="message-avatar">👤</view>
+        <view class="message-content">
+          <text class="message-text">{{item.content}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="chat-input">
+      <input type="text" placeholder="输入你的问题..." bindinput="onInputChange" value="{{inputValue}}" class="input-field"></input>
+      <button bindtap="onSendMessage" class="send-button">发送</button>
+    </view>
+  </view>
+</view>

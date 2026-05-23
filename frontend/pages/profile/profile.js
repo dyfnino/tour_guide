@@ -1,3 +1,5 @@
+const { getMe } = require('../../utils/api.js');
+
 Page({
   data: {
     isLogin: false,
@@ -12,43 +14,79 @@ Page({
     this.loadUserInfo();
   },
 
-  loadUserInfo() {
-    const stored = wx.getStorageSync('userInfo');
-    if (stored && stored.nickName) {
-      this.setData({
-        isLogin: true,
-        userInfo: {
-          avatarUrl: stored.avatarUrl || this.data.userInfo.avatarUrl,
-          nickName: stored.nickName,
-          action: '已登录'
-        }
-      });
+  async loadUserInfo() {
+    const token = wx.getStorageSync('token');
+    if (token && !String(token).startsWith('mock-')) {
+      // 有真实 token，从服务端获取用户信息
+      try {
+        const res = await getMe();
+        this.setData({
+          isLogin: true,
+          userInfo: {
+            avatarUrl: res.avatar || 'https://picsum.photos/80/80?random=12',
+            nickName: res.nickname || '用户',
+            action: '已登录'
+          }
+        });
+        // 同步到本地缓存
+        wx.setStorageSync('userInfo', {
+          nickName: res.nickname,
+          avatarUrl: res.avatar
+        });
+      } catch (err) {
+        // token 过期，清除登录态
+        console.error('获取用户信息失败:', err);
+        this.clearLoginState();
+      }
     } else {
-      this.setData({
-        isLogin: false,
-        userInfo: {
-          avatarUrl: 'https://picsum.photos/80/80?random=12',
-          nickName: '游客',
-          action: '点击登录/注册'
-        }
-      });
+      // 检查本地缓存（可能是 mock 登录的旧数据）
+      const stored = wx.getStorageSync('userInfo');
+      if (stored && stored.nickName && token) {
+        this.setData({
+          isLogin: true,
+          userInfo: {
+            avatarUrl: stored.avatarUrl || this.data.userInfo.avatarUrl,
+            nickName: stored.nickName,
+            action: '已登录'
+          }
+        });
+      } else {
+        this.setData({
+          isLogin: false,
+          userInfo: {
+            avatarUrl: 'https://picsum.photos/80/80?random=12',
+            nickName: '游客',
+            action: '点击登录/注册'
+          }
+        });
+      }
     }
+  },
+
+  clearLoginState() {
+    wx.removeStorageSync('userInfo');
+    wx.removeStorageSync('token');
+    this.setData({
+      isLogin: false,
+      userInfo: {
+        avatarUrl: 'https://picsum.photos/80/80?random=12',
+        nickName: '游客',
+        action: '点击登录/注册'
+      }
+    });
   },
 
   onShareAppMessage() {
     return { title: '导游服务平台', path: '/pages/home/home' };
   },
 
-  // 登录入口
   onLoginTap() {
     if (this.data.isLogin) {
       wx.showActionSheet({
         itemList: ['退出登录'],
         success: (res) => {
           if (res.tapIndex === 0) {
-            wx.removeStorageSync('userInfo');
-            wx.removeStorageSync('token');
-            this.loadUserInfo();
+            this.clearLoginState();
             wx.showToast({ title: '已退出', icon: 'success' });
           }
         }

@@ -1,11 +1,11 @@
-const { courses } = require('../../utils/mock.js');
+const { listCourses } = require('../../utils/api.js');
 
 Page({
   data: {
     currentTab: 'online',
     selectedCategory: 'all',
-    allCourses: courses,
-    courseList: courses,
+    allCourses: [],
+    courseList: [],
     tabs: [
       { key: 'online', name: '网课点播' },
       { key: 'practice', name: '考试刷题' },
@@ -22,10 +22,32 @@ Page({
     ]
   },
 
-  onLoad() {},
+  onLoad() {
+    this.loadCourses();
+  },
+
+  async loadCourses() {
+    try {
+      const res = await listCourses();
+      const courses = (res || []).map(c => ({
+        id: c.id,
+        name: c.name,
+        image: c.image,
+        desc: c.description || '',
+        price: c.is_free ? '免费' : ('¥' + c.price),
+        rating: '98%好评',
+        students: '2000+人已学',
+        lecturer: c.level || '',
+        category: c.category
+      }));
+      this.setData({ allCourses: courses, courseList: courses });
+    } catch (err) {
+      console.error('课程加载失败:', err);
+    }
+  },
 
   onPullDownRefresh() {
-    setTimeout(() => wx.stopPullDownRefresh(), 800);
+    this.loadCourses().then(() => wx.stopPullDownRefresh());
   },
 
   onShareAppMessage() {

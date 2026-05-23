@@ -1,14 +1,14 @@
-const { questionBank } = require('../../../utils/mock.js');
+const { listQuestions } = require('../../../utils/api.js');
 
 Page({
   data: {
     started: false,
-    questions: questionBank,
+    questions: [],
     index: 0,
     current: null,
-    answers: {},                 // {qid: [选项索引]}
-    currentSelected: [],         // 当前题已选选项（视图用）
-    cardStatus: [],              // 答题卡每题状态：'cur' / 'done' / ''
+    answers: {},
+    currentSelected: [],
+    cardStatus: [],
     countdown: '60:00',
     finished: false,
     score: 0,
@@ -19,7 +19,27 @@ Page({
   _timer: null,
   _remain: 60 * 60,
 
-  onLoad() {},
+  onLoad() {
+    this.loadQuestions();
+  },
+
+  async loadQuestions() {
+    try {
+      const res = await listQuestions({ limit: 50 });
+      const questions = (res || []).map(q => ({
+        id: q.id,
+        type: q.type,
+        title: q.title,
+        options: q.options,
+        answer: q.answer,
+        analysis: q.analysis
+      }));
+      this.setData({ questions });
+    } catch (err) {
+      console.error('题库加载失败:', err);
+      wx.showToast({ title: '题库加载失败', icon: 'none' });
+    }
+  },
 
   onUnload() {
     if (this._timer) clearInterval(this._timer);
@@ -27,6 +47,10 @@ Page({
 
   startExam() {
     const total = this.data.questions.length;
+    if (total === 0) {
+      wx.showToast({ title: '暂无题目', icon: 'none' });
+      return;
+    }
     this.setData({
       started: true,
       index: 0,
@@ -55,7 +79,6 @@ Page({
     this.setData({ countdown: `${m}:${s}` });
   },
 
-  // 计算答题卡状态
   rebuildCardStatus(answers, index) {
     return this.data.questions.map((q, i) => {
       if (i === index) return 'cur';

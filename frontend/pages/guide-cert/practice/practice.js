@@ -1,18 +1,39 @@
-const { questionBank } = require('../../../utils/mock.js');
+const { listQuestions } = require('../../../utils/api.js');
 
 Page({
   data: {
-    questions: questionBank,
+    questions: [],
     index: 0,
     current: null,
-    selected: [],   // 多选支持
+    selected: [],
     submitted: false,
     isCorrect: false,
     correctCount: 0
   },
 
   onLoad() {
-    this.loadQuestion(0);
+    this.loadQuestions();
+  },
+
+  async loadQuestions() {
+    try {
+      const res = await listQuestions({ limit: 50 });
+      const questions = (res || []).map(q => ({
+        id: q.id,
+        type: q.type,
+        title: q.title,
+        options: q.options,
+        answer: q.answer,
+        analysis: q.analysis
+      }));
+      this.setData({ questions });
+      if (questions.length > 0) {
+        this.loadQuestion(0);
+      }
+    } catch (err) {
+      console.error('题库加载失败:', err);
+      wx.showToast({ title: '题库加载失败', icon: 'none' });
+    }
   },
 
   loadQuestion(i) {

@@ -1,4 +1,4 @@
-const { courses } = require('../../utils/mock.js');
+const { listCourses, listProducts } = require('../../utils/api.js');
 
 Page({
   data: {
@@ -9,17 +9,44 @@ Page({
       { id: 4, image: 'https://picsum.photos/id/292/800/400', text: '西安特产 - 肉夹馍 泡馍 凉皮' },
       { id: 5, image: 'https://picsum.photos/id/401/800/400', text: '西安文创 - 兵马俑纪念品' }
     ],
-    courseList: courses.slice(0, 2),
-    specialtyList: [
-      { id: 1, name: '手工特色糕点礼盒', image: 'https://picsum.photos/300/180?random=3', price: '¥88', tag: '热销' },
-      { id: 2, name: '地方特色文创书签', image: 'https://picsum.photos/300/180?random=4', price: '¥39', tag: '新品' }
-    ]
+    courseList: [],
+    specialtyList: []
   },
 
-  onLoad() {},
+  onLoad() {
+    this.loadData();
+  },
+
+  async loadData() {
+    try {
+      const [coursesRes, productsRes] = await Promise.all([
+        listCourses({ limit: 2 }),
+        listProducts({ limit: 2 })
+      ]);
+      this.setData({
+        courseList: (coursesRes || []).map(c => ({
+          id: c.id,
+          name: c.name,
+          image: c.image,
+          desc: c.description || '',
+          price: c.is_free ? '免费' : ('¥' + c.price),
+          category: c.category
+        })),
+        specialtyList: (productsRes || []).map(p => ({
+          id: p.id,
+          name: p.name,
+          image: p.image,
+          price: '¥' + p.price,
+          tag: p.is_hot ? '热销' : (p.is_new ? '新品' : '')
+        }))
+      });
+    } catch (err) {
+      console.error('首页数据加载失败:', err);
+    }
+  },
 
   onPullDownRefresh() {
-    setTimeout(() => wx.stopPullDownRefresh(), 800);
+    this.loadData().then(() => wx.stopPullDownRefresh());
   },
 
   onShareAppMessage() {
@@ -44,7 +71,7 @@ Page({
 
   onCourseMoreTap() {
     wx.switchTab({ url: '/pages/guide-cert/guide-cert' });
- },
+  },
 
   onSpecialtyMoreTap() {
     wx.switchTab({ url: '/pages/specialty/specialty' });

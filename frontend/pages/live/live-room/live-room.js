@@ -1,33 +1,73 @@
-const { liveRoom } = require('../../../utils/mock.js');
+const { request, listLives, listLiveMessages, sendLiveMessage } = require('../../../utils/api.js');
 
 Page({
   data: {
-    room: liveRoom,
+    room: null,
     inputMsg: '',
-    messages: [
-      { id: 1, user: '小美', content: '老师讲得真清楚！' },
-      { id: 2, user: '阿强', content: '请问导游证多久能拿到？' },
-      { id: 3, user: '系统', content: '欢迎进入直播间，请文明发言。' }
-    ],
+    messages: [],
     likeCount: 0
   },
 
-  onLoad() {
-    wx.setNavigationBarTitle({ title: liveRoom.title });
+  onLoad(options) {
+    const id = options.id;
+    if (id) {
+      this.loadRoom(id);
+    }
+  },
+
+  async loadRoom(id) {
+    try {
+      // 加载直播信息
+      const liveRes = await request(`/live/lives/${id}`);
+      const room = {
+        id: liveRes.id,
+        title: liveRes.title,
+        lecturer: liveRes.lecturer,
+        online: liveRes.viewers,
+        image: liveRes.cover_image,
+        videoUrl: liveRes.live_url
+      };
+      this.setData({ room });
+      wx.setNavigationBarTitle({ title: room.title });
+
+      // 加载聊天消息
+      const msgsRes = await listLiveMessages(id);
+      const messages = (msgsRes || []).map(m => ({
+        id: m.id,
+        user: m.nickname,
+        content: m.content
+      }));
+      this.setData({ messages });
+    } catch (err) {
+      console.error('直播间加载失败:', err);
+      wx.showToast({ title: '加载失败', icon: 'none' });
+    }
   },
 
   onMsgInput(e) {
     this.setData({ inputMsg: e.detail.value });
   },
 
-  sendMsg() {
+  async sendMsg() {
     const text = (this.data.inputMsg || '').trim();
     if (!text) return;
-    const messages = [
-      ...this.data.messages,
-      { id: Date.now(), user: '我', content: text }
-    ];
-    this.setData({ messages, inputMsg: '' });
+    const roomId = this.data.room.id;
+
+    // 先本地追加用户消息
+    const tempMsg = { id: Date.now(), user: '我', content: text };
+    this.setData({ messages: [...this.data.messages, tempMsg], inputMsg: '' });
+
+    try {
+      // 发送到服务端
+      const res = await sendLiveMessage(roomId, text);
+      // 用服务端返回的消息替换临时消息
+      const messages = this.data.messages.map(m =>
+        m.id === tempMsg.id ? { id: res.id, user: res.nickname, content: res.content } : m
+      );
+      this.setData({ messages });
+    } catch (err) {
+      console.error('发送消息失败:', err);
+    }
   },
 
   like() {
@@ -41,8 +81,8 @@ Page({
 
   onShareAppMessage() {
     return {
-      title: this.data.room.title,
-      path: `/pages/live/live-room/live-room?id=${this.data.room.id}`
+      title: this.data.room ? this.data.room.title : '直播间',
+      path: `/pages/live/live-room/live-room?id=${this.data.room ? this.data.room.id : ''}`
     };
   }
 });

@@ -1,6 +1,5 @@
 App({
   onLaunch() {
-    // 启动时仅恢复登录态，不强制跳转登录页（无后端环境下避免卡死）
     const token = wx.getStorageSync('token');
     const userInfo = wx.getStorageSync('userInfo');
     if (token && userInfo) {

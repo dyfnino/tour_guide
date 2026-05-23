@@ -1,15 +1,15 @@
 <view class="order-detail-container">
   <!-- 订单状态 -->
   <view class="order-status-section">
-    <text class="status-icon {{order.status}}">{{getStatusIcon(order.status)}}</text>
-    <text class="status-text">{{getStatusText(order.status)}}</text>
+    <text class="status-icon {{order.status}}">{{order.status === 'unpaid' ? '💳' : (order.status === 'paid' ? '📦' : '✅')}}</text>
+    <text class="status-text">{{order.status === 'unpaid' ? '未支付' : (order.status === 'paid' ? '已支付' : '已完成')}}</text>
   </view>
 
   <!-- 订单信息 -->
   <view class="order-info-section">
     <view class="info-item">
       <text class="info-label">订单号:</text>
-      <text class="info-value">{{order.id}}</text>
+      <text class="info-value">{{order.orderNo || order.id}}</text>
     </view>
     <view class="info-item">
       <text class="info-label">下单时间:</text>
@@ -19,10 +19,14 @@
       <text class="info-label">支付方式:</text>
       <text class="info-value">{{order.paymentMethod || '未支付'}}</text>
     </view>
+    <view class="info-item" wx:if="{{order.isCourse}}">
+      <text class="info-label">订单类型:</text>
+      <text class="info-value">课程订单</text>
+    </view>
   </view>
 
-  <!-- 收货信息 -->
-  <view class="shipping-info-section">
+  <!-- 收货信息（仅商品订单显示） -->
+  <view class="shipping-info-section" wx:if="{{!order.isCourse}}">
     <view class="section-header">
       <text class="header-icon">📦</text>
       <text class="header-title">收货信息</text>
@@ -34,11 +38,11 @@
     </view>
   </view>
 
-  <!-- 商品信息 -->
+  <!-- 商品/课程信息 -->
   <view class="products-section">
     <view class="section-header">
-      <text class="header-icon">🛍️</text>
-      <text class="header-title">商品信息</text>
+      <text class="header-icon">{{order.isCourse ? '📖' : '🛍️'}}</text>
+      <text class="header-title">{{order.isCourse ? '课程信息' : '商品信息'}}</text>
     </view>
     <view class="product-list">
       <view class="product-item" wx:for="{{order.products}}" wx:key="productId" wx:for-item="product">
@@ -57,10 +61,10 @@
   <!-- 价格信息 -->
   <view class="price-section">
     <view class="price-item">
-      <text class="price-label">商品总价:</text>
+      <text class="price-label">{{order.isCourse ? '课程费用' : '商品总价'}}:</text>
       <text class="price-value">{{order.totalPrice}}</text>
     </view>
-    <view class="price-item">
+    <view class="price-item" wx:if="{{!order.isCourse}}">
       <text class="price-label">运费:</text>
       <text class="price-value">{{order.shippingFee || '¥0'}}</text>
     </view>
@@ -72,8 +76,10 @@
 
   <!-- 操作按钮 -->
   <view class="action-buttons">
-    <button wx:if="order.status === 'unpaid'" class="btn-primary" bindtap="payOrder">去支付</button>
-    <button wx:if="order.status === 'paid'" class="btn-secondary" bindtap="confirmReceipt">确认收货</button>
+    <button wx:if="{{order.status === 'unpaid'}}" class="btn-primary" bindtap="payOrder">去支付</button>
+    <button wx:if="{{order.status === 'paid' && !order.isCourse}}" class="btn-secondary" bindtap="confirmReceipt">确认收货</button>
+    <button wx:if="{{order.status === 'paid' && order.isCourse}}" class="btn-secondary" bindtap="goToStudy">开始学习</button>
+    <button wx:if="{{order.status === 'completed' && order.isCourse}}" class="btn-secondary" bindtap="goToStudy">继续学习</button>
     <button class="btn-tertiary" bindtap="contactService">联系客服</button>
   </view>
 </view>

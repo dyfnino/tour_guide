@@ -69,6 +69,12 @@ const listProducts = (params = {}) => {
   return request('/products' + (qs ? `?${qs}` : ''));
 };
 
+// ---- 订单 ----
+const createCourseOrder = (courseId) =>
+  request('/orders/course', { method: 'POST', data: { course_id: courseId } });
+const payOrder = (orderId) =>
+  request(`/orders/${orderId}`, { method: 'PUT', data: { status: 'paid' } });
+
 // ---- 我的（学习进度） ----
 const myCoursesDetail = () => request('/me/courses/detail');
 const enrollCourse = (courseId) =>
@@ -85,4 +91,5 @@ module.exports = {
   listLives, listReplays, getReplay, listLiveMessages, sendLiveMessage,
   listProducts,
   myCoursesDetail, enrollCourse, updateProgress,
+  createCourseOrder, payOrder,
 };

@@ -23,7 +23,6 @@ Page({
     return { title: '我的订单', path: '/pages/profile/orders/orders' };
   },
 
-  // 加载订单数据
   async loadOrders(callback) {
     const { currentStatus } = this.data;
     let path = '/orders';
@@ -35,9 +34,10 @@ Page({
     try {
       const res = await request(path);
       const formattedOrders = (res || []).map(order => {
+        const isCourse = (order.order_type || 'product') === 'course';
         const products = (order.items || []).map(item => ({
           productId: item.product_id,
-          name: '商品',
+          name: isCourse ? '课程' : '商品',
           image: 'https://picsum.photos/300/300?random=' + item.product_id,
           price: '¥' + item.price,
           quantity: item.quantity
@@ -48,7 +48,8 @@ Page({
           status: order.status,
           totalPrice: '¥' + order.total_amount,
           products: products,
-          createTime: order.created_at
+          createTime: order.created_at,
+          isCourse: isCourse
         };
       });
       this.setData({ orders: formattedOrders });
@@ -61,22 +62,18 @@ Page({
     }
   },
 
-  // 切换订单状态
   switchStatus(e) {
     const status = e.currentTarget.dataset.status;
     this.setData({ currentStatus: status });
     this.loadOrders();
   },
 
-  // 查看订单详情
   viewOrderDetail(e) {
     const orderId = e.currentTarget.dataset.id;
     wx.navigateTo({ url: `/pages/profile/orders/detail/detail?id=${orderId}` });
   },
 
-  // 去支付
   async payOrder(e) {
-    e.stopPropagation();
     const orderId = e.currentTarget.dataset.id;
     try {
       await request(`/orders/${orderId}`, { method: 'PUT', data: { status: 'paid' } });
@@ -88,9 +85,7 @@ Page({
     }
   },
 
-  // 确认收货
   async confirmReceipt(e) {
-    e.stopPropagation();
     const orderId = e.currentTarget.dataset.id;
     try {
       await request(`/orders/${orderId}`, { method: 'PUT', data: { status: 'completed' } });
@@ -100,5 +95,9 @@ Page({
       console.error('确认收货失败:', err);
       wx.showToast({ title: '确认收货失败', icon: 'none' });
     }
+  },
+
+  goToStudy() {
+    wx.navigateTo({ url: '/pages/profile/my-courses/my-courses' });
   }
 });

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Enum as SQLEnum, Text
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Enum as SQLEnum, Text, Boolean
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
@@ -9,6 +9,10 @@ class OrderStatus(str, enum.Enum):
     PAID = "paid"
     COMPLETED = "completed"
 
+class OrderType(str, enum.Enum):
+    PRODUCT = "product"
+    COURSE = "course"
+
 class Order(Base):
     __tablename__ = "orders"
     
@@ -17,9 +21,11 @@ class Order(Base):
     order_no = Column(String(32), unique=True, index=True, nullable=False)
     total_amount = Column(Float, nullable=False)
     status = Column(SQLEnum(OrderStatus), nullable=False, default=OrderStatus.UNPAID)
-    name = Column(String(100), nullable=False)
-    phone = Column(String(20), nullable=False)
-    address = Column(Text, nullable=False)
+    order_type = Column(SQLEnum(OrderType), nullable=False, default=OrderType.PRODUCT)
+    # 收货信息（课程订单可为空）
+    name = Column(String(100), default="")
+    phone = Column(String(20), default="")
+    address = Column(Text, default="")
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     

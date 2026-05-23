@@ -9,10 +9,11 @@
 
   <!-- 订单列表 -->
   <view class="order-list">
-    <view class="order-item card-shadow" wx:for="{{filteredOrders}}" wx:key="id" bindtap="viewOrderDetail" data-id="{{item.id}}">
+    <view class="order-item card-shadow" wx:for="{{orders}}" wx:key="id" bindtap="viewOrderDetail" data-id="{{item.id}}">
       <view class="order-header">
-        <text class="order-id">订单号: {{item.id}}</text>
-        <text class="order-status {{item.status}}">{{getStatusText(item.status)}}</text>
+        <text class="order-id">订单号: {{item.orderNo || item.id}}</text>
+        <text class="order-type-tag" wx:if="{{item.isCourse}}">课程</text>
+        <text class="order-status {{item.status}}">{{item.status === 'unpaid' ? '未支付' : (item.status === 'paid' ? '已支付' : '已完成')}}</text>
       </view>
       <view class="order-products">
         <view class="product-item" wx:for="{{item.products}}" wx:key="productId" wx:for-item="product">
@@ -27,18 +28,18 @@
         </view>
       </view>
       <view class="order-footer">
-        <text class="order-total">共{{getTotalProducts(item.products)}}件商品 合计: {{item.totalPrice}}</text>
+        <text class="order-total">合计: {{item.totalPrice}}</text>
         <view class="order-actions">
-          <button wx:if="item.status === 'unpaid'" class="btn-primary" bindtap="payOrder" data-id="{{item.id}}">去支付</button>
-          <button wx:if="item.status === 'paid'" class="btn-secondary" bindtap="confirmReceipt" data-id="{{item.id}}">确认收货</button>
-          <button wx:if="item.status === 'completed'" class="btn-tertiary" bindtap="viewOrderDetail" data-id="{{item.id}}">查看详情</button>
+          <button wx:if="{{item.status === 'unpaid'}}" class="btn-primary" catchtap="payOrder" data-id="{{item.id}}">去支付</button>
+          <button wx:if="{{item.status === 'paid' && !item.isCourse}}" class="btn-secondary" catchtap="confirmReceipt" data-id="{{item.id}}">确认收货</button>
+          <button wx:if="{{item.status === 'paid' && item.isCourse}}" class="btn-secondary" catchtap="goToStudy">开始学习</button>
         </view>
       </view>
     </view>
   </view>
 
   <!-- 空状态 -->
-  <view wx:if="filteredOrders.length === 0" class="empty-state">
+  <view wx:if="{{orders.length === 0}}" class="empty-state">
     <text class="empty-icon">📦</text>
     <text class="empty-text">暂无订单</text>
   </view>

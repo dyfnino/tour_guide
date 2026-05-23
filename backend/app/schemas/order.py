@@ -8,6 +8,10 @@ class OrderStatus(str, Enum):
     PAID = "paid"
     COMPLETED = "completed"
 
+class OrderType(str, Enum):
+    PRODUCT = "product"
+    COURSE = "course"
+
 class OrderItemBase(BaseModel):
     product_id: int
     quantity: int = Field(gt=0)
@@ -24,13 +28,17 @@ class OrderItem(OrderItemBase):
         from_attributes = True
 
 class OrderBase(BaseModel):
-    name: str
-    phone: str
-    address: str
+    name: str = ""
+    phone: str = ""
+    address: str = ""
     items: List[OrderItemCreate]
 
 class OrderCreate(OrderBase):
     pass
+
+class CourseOrderCreate(BaseModel):
+    """课程订单：只需 course_id，无需收货信息"""
+    course_id: int
 
 class OrderUpdate(BaseModel):
     status: OrderStatus
@@ -41,6 +49,7 @@ class Order(OrderBase):
     order_no: str
     total_amount: float
     status: OrderStatus
+    order_type: OrderType
     created_at: datetime
     updated_at: datetime
     items: List[OrderItem]
@@ -53,6 +62,7 @@ class OrderList(BaseModel):
     order_no: str
     total_amount: float
     status: OrderStatus
+    order_type: OrderType
     created_at: datetime
     item_count: int
     name: str

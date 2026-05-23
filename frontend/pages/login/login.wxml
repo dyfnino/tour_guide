@@ -1,6 +1,8 @@
 <view class="container">
   <view class="logo-container">
-    <image class="logo" src="/pages/home/icon-home.png" mode="aspectFit"></image>
+    <view class="logo-placeholder">
+      <text class="logo-text">导游\n服务</text>
+    </view>
     <text class="app-name">导游服务平台</text>
   </view>
   
@@ -16,7 +18,7 @@
       plain="false"
       form-type="button"
      style="position: relative; left: 0rpx; top: -1rpx">
-      <image class="wechat-icon" src="/pages/login/wechat.png" mode="aspectFit"></image>
+      <view class="wechat-icon-text">微</view>
       <text class="wechat-login-text">微信登录</text>
     </button>
     

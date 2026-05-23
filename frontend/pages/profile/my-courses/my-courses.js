@@ -1,4 +1,4 @@
-const { myCoursesDetail, listCourses } = require('../../../utils/api.js');
+const { myCoursesDetail } = require('../../../utils/api.js');
 
 Page({
   data: {
@@ -11,35 +11,27 @@ Page({
 
   async loadMyCourses() {
     try {
-      // 先尝试获取我的课程（含学习进度）
       const res = await myCoursesDetail();
       const list = (res || []).map(c => ({
-        id: c.course_id || c.id,
+        id: c.id,
         name: c.name || '课程',
         image: c.image || '',
-        desc: c.description || '',
-        price: c.is_free ? '免费' : ('¥' + (c.price || 0)),
+        desc: c.desc || c.description || '',
         progress: c.progress || 0,
-        category: c.category || ''
+        lecturer: c.lecturer || ''
       }));
       this.setData({ list });
     } catch (err) {
-      // 如果接口报错（如未登录），回退到课程列表
-      console.warn('我的课程接口失败，回退课程列表:', err);
-      try {
-        const res = await listCourses();
-        const list = (res || []).map((c, i) => ({
-          id: c.id,
-          name: c.name,
-          image: c.image,
-          desc: c.description || '',
-          price: c.is_free ? '免费' : ('¥' + c.price),
-          progress: 0,
-          category: c.category
-        }));
-        this.setData({ list });
-      } catch (e) {
-        console.error('课程列表加载失败:', e);
+      console.error('我的课程加载失败:', err);
+      if (err.statusCode === 401) {
+        wx.showModal({
+          title: '请先登录',
+          content: '登录后查看已购课程',
+          confirmText: '去登录',
+          success: (res) => {
+            if (res.confirm) wx.navigateTo({ url: '/pages/login/login' });
+          }
+        });
       }
     }
   },

@@ -4,6 +4,16 @@
   background-color: #f5f5f5;
 }
 
+/* 课程订单标签 */
+.order-type-tag {
+  font-size: 22rpx;
+  color: #1677ff;
+  background-color: #e6f4ff;
+  padding: 2rpx 12rpx;
+  border-radius: 8rpx;
+  margin-left: 8rpx;
+}
+
 /* 订单状态切换 */
 .status-tabs {
   display: flex;
@@ -29,7 +39,7 @@
 }
 
 .tab-item.active::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 50%;

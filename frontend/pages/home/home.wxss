@@ -26,17 +26,6 @@
   color: #262626;
 }
 
-.header-right {
-  display: flex;
-  align-items: center;
-}
-
-.header-icon {
-  width: 40rpx;
-  height: 40rpx;
-  margin-left: 32rpx;
-}
-
 /* 轮播图 */
 .carousel-container {
   position: relative;

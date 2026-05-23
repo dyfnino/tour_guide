@@ -3,14 +3,6 @@
   <view class="header">
     <view class="header-content">
       <text class="header-title">导游服务平台</text>
-      <view class="header-right">
-        <view class="header-icon" bindtap="onSearchTap">
-          <text class="icon-text">🔍</text>
-        </view>
-        <view class="header-icon" bindtap="onCartTap">
-          <text class="icon-text">🛒</text>
-        </view>
-      </view>
     </view>
   </view>
 

@@ -11,6 +11,7 @@ import aiomysql
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from sqlalchemy import select
+from sqlalchemy.engine import make_url
 
 from .session import async_engine, Base, AsyncSessionLocal
 from ..models import (
@@ -23,13 +24,33 @@ load_dotenv()
 
 
 def get_db_connection_info():
-    db_url = os.getenv("DATABASE_URL", "mysql+aiomysql://root:@localhost:3306/guide")
-    match = re.match(r"mysql\+aiomysql://(.*?):(.*?)@(.*?):(.*?)/(.*)", db_url)
-    if match:
-        user, password, host, port, dbname = match.groups()
-        return {"host": host, "port": int(port), "user": user, "password": password, "db": dbname}
-    return {"host": "localhost", "port": 3306, "user": "root", "password": "", "db": "guide"}
+    db_url = os.getenv(
+        "DATABASE_URL",
+        "mysql+aiomysql://root:123456@localhost:3306/guide?charset=utf8mb4"
+    )
 
+    try:
+        url = make_url(db_url)
+        
+        # ✅ 核心修复：显式处理密码为空的情况，而不是依赖 or 短路
+        password = url.password
+        if not password:
+            print(f"[WARN] DATABASE_URL 中未包含密码，已回退使用默认密码")
+            password = "123456"
+
+        return {
+            "host": url.host or "localhost",
+            "port": url.port or 3306,
+            "user": url.username or "root",
+            "password": password,
+            "db": url.database or "guide",
+        }
+    except Exception as e:
+        # ✅ 打印实际被解析的 URL（脱敏），方便定位是哪个配置源出了问题
+        raise ValueError(
+            f"无效的 DATABASE_URL: {db_url}\n"
+            f"请检查 .env 文件或系统环境变量是否正确设置了密码"
+        ) from e
 
 async def create_database():
     info = get_db_connection_info()

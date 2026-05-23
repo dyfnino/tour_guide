@@ -26,14 +26,6 @@ Page({
     return { title: '导游服务平台', path: '/pages/home/home' };
   },
 
-  onSearchTap() {
-    wx.showToast({ title: '搜索功能开发中', icon: 'none' });
-  },
-
-  onCartTap() {
-    wx.showToast({ title: '购物车开发中', icon: 'none' });
-  },
-
   navigateToGuideCert() {
     wx.switchTab({ url: '/pages/guide-cert/guide-cert' });
   },

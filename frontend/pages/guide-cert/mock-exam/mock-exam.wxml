@@ -1,0 +1,66 @@
+<wxs src="../../../utils/wxs/exam.wxs" module="ex" />
+
+<view class="exam-container">
+  <!-- 开始页 -->
+  <view class="start-page" wx:if="{{!started && !finished}}">
+    <image class="banner" src="https://picsum.photos/600/300?random=20" mode="aspectFill"></image>
+    <view class="title">导游资格证 · 模拟考试</view>
+    <view class="info">
+      <text>题目数量：{{questions.length}} 题</text>
+      <text>考试时长：60 分钟</text>
+      <text>题型：单选 / 多选 / 判断</text>
+    </view>
+    <button class="primary-btn" bindtap="startExam">开始考试</button>
+  </view>
+
+  <!-- 答题中 -->
+  <view class="exam-page" wx:if="{{started && !finished}}">
+    <view class="exam-header">
+      <text class="progress">{{index + 1}} / {{questions.length}}</text>
+      <text class="countdown">⏱ {{countdown}}</text>
+      <text class="submit-btn" bindtap="confirmSubmit">交卷</text>
+    </view>
+
+    <view class="question-card">
+      <text class="q-title">{{current.title}}</text>
+      <view class="options">
+        <view
+          wx:for="{{current.options}}"
+          wx:key="*this"
+          wx:for-index="i"
+          wx:for-item="opt"
+          class="option {{ex.includes(currentSelected, i) ? 'selected' : ''}}"
+          data-index="{{i}}"
+          bindtap="onOptionTap"
+        >
+          <text class="opt-letter">{{ex.letter(i)}}</text>
+          <text class="opt-text">{{opt}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="card-bar">
+      <view
+        wx:for="{{questions}}"
+        wx:key="id"
+        wx:for-index="i"
+        class="card-cell {{cardStatus[i]}}"
+        data-index="{{i}}"
+        bindtap="goToQuestion"
+      >{{i + 1}}</view>
+    </view>
+
+    <view class="exam-footer">
+      <button class="ghost-btn" bindtap="onPrev">上一题</button>
+      <button class="primary-btn" bindtap="onNext">下一题</button>
+    </view>
+  </view>
+
+  <!-- 成绩页 -->
+  <view class="result-page" wx:if="{{finished}}">
+    <view class="score-circle">{{score}}</view>
+    <text class="score-tip">{{timeoutTip ? '考试时间到' : '已交卷'}}</text>
+    <text class="score-detail">共 {{questions.length}} 题，答对 {{correct}} 题</text>
+    <button class="primary-btn" bindtap="backToList">返回</button>
+  </view>
+</view>

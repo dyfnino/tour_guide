@@ -1,0 +1,29 @@
+// 模板表达式辅助函数（WXS 不支持 ES6 的箭头函数和很多新 API，仅用 ES5 写法）
+
+// 数组是否包含某值
+function includes(arr, val) {
+  if (!arr || !arr.length) return false;
+  for (var i = 0; i < arr.length; i++) {
+    if (arr[i] === val) return true;
+  }
+  return false;
+}
+
+// 选项序号转 A/B/C/D
+function letter(i) {
+  var arr = ["A", "B", "C", "D", "E", "F"];
+  return arr[i] || "";
+}
+
+// 判断是否为正确答案选项（练习页用）
+function isCorrectOption(question, i) {
+  if (!question) return false;
+  if (question.type === "multi") return includes(question.answer, i);
+  return question.answer === i;
+}
+
+module.exports = {
+  includes: includes,
+  letter: letter,
+  isCorrectOption: isCorrectOption,
+};

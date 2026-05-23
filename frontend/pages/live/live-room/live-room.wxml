@@ -1,0 +1,38 @@
+<view class="room-container">
+  <!-- 视频播放器 -->
+  <view class="video-wrap">
+    <video
+      class="video"
+      src="{{room.videoUrl}}"
+      autoplay="{{true}}"
+      controls="{{true}}"
+      object-fit="contain"
+    ></video>
+    <view class="live-flag"><text class="dot"></text> LIVE</view>
+  </view>
+
+  <!-- 信息栏 -->
+  <view class="info-bar">
+    <text class="title">{{room.title}}</text>
+    <text class="lecturer">主讲：{{room.lecturer}} · 在线 {{room.online}} 人</text>
+  </view>
+
+  <!-- 弹幕/聊天 -->
+  <scroll-view class="chat" scroll-y="{{true}}">
+    <view class="msg" wx:for="{{messages}}" wx:key="id">
+      <text class="msg-user">{{item.user}}：</text>
+      <text class="msg-content">{{item.content}}</text>
+    </view>
+  </scroll-view>
+
+  <!-- 互动栏 -->
+  <view class="action-bar">
+    <input class="msg-input" placeholder="说点什么..." value="{{inputMsg}}" bindinput="onMsgInput" confirm-type="send" bindconfirm="sendMsg"/>
+    <view class="action-btn" bindtap="like">
+      <text class="icon">❤</text>
+      <text wx:if="{{likeCount > 0}}" class="count">{{likeCount}}</text>
+    </view>
+    <view class="action-btn" bindtap="share"><text class="icon">↗</text></view>
+    <button class="send-btn" bindtap="sendMsg">发送</button>
+  </view>
+</view>

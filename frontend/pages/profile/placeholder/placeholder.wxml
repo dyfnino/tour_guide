@@ -1,0 +1,5 @@
+<view class="ph">
+  <text class="emoji">🚧</text>
+  <text class="title">{{title}}</text>
+  <text class="tip">功能正在加紧开发，敬请期待</text>
+</view>

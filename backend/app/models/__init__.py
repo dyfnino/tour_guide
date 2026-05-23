@@ -4,5 +4,12 @@ from .product import Product
 from .live import Live, Replay
 from .ai_test import AiTest, TestResult
 from .order import Order, OrderItem, OrderStatus
+from .question import Question, ExamSession, UserCourse, LiveMessage
 
-__all__ = ["User", "Course", "Product", "Live", "Replay", "AiTest", "TestResult", "Order", "OrderItem", "OrderStatus"]
+__all__ = [
+    "User", "Course", "Product",
+    "Live", "Replay",
+    "AiTest", "TestResult",
+    "Order", "OrderItem", "OrderStatus",
+    "Question", "ExamSession", "UserCourse", "LiveMessage",
+]

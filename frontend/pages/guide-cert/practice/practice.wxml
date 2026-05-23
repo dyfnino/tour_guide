@@ -1,0 +1,38 @@
+<wxs src="../../../utils/wxs/exam.wxs" module="ex" />
+
+<view class="practice-container" wx:if="{{current}}">
+  <view class="topbar">
+    <text class="progress">第 {{index + 1}} / {{questions.length}} 题</text>
+    <text class="type-tag">{{current.type === 'single' ? '单选' : current.type === 'multi' ? '多选' : '判断'}}</text>
+  </view>
+
+  <view class="question-card">
+    <text class="title">{{current.title}}</text>
+    <view class="options">
+      <view
+        wx:for="{{current.options}}"
+        wx:key="*this"
+        wx:for-index="i"
+        wx:for-item="opt"
+        class="option {{ex.includes(selected, i) ? 'selected' : ''}} {{submitted && ex.isCorrectOption(current, i) ? 'correct' : ''}} {{submitted && ex.includes(selected, i) && !ex.isCorrectOption(current, i) ? 'wrong' : ''}}"
+        data-index="{{i}}"
+        bindtap="onOptionTap"
+      >
+        <text class="opt-letter">{{ex.letter(i)}}</text>
+        <text class="opt-text">{{opt}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="analysis" wx:if="{{submitted}}">
+    <text class="result {{isCorrect ? 'right' : 'fail'}}">{{isCorrect ? '回答正确 ✓' : '回答错误 ✗'}}</text>
+    <text class="analysis-title">解析</text>
+    <text class="analysis-text">{{current.analysis}}</text>
+  </view>
+
+  <view class="footer">
+    <button class="btn btn-prev" bindtap="onPrev">上一题</button>
+    <button class="btn btn-submit" bindtap="onSubmit" wx:if="{{!submitted}}">提交</button>
+    <button class="btn btn-next" bindtap="onNext" wx:else>下一题</button>
+  </view>
+</view>

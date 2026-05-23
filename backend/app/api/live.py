@@ -1,13 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from typing import List
+from sqlalchemy import select, desc
+from typing import List, Optional
 from ..database.session import get_db
 from ..models.live import Live, Replay
+from ..models.question import LiveMessage
+from ..models.user import User
 from ..schemas.live import (
     LiveCreate, LiveUpdate, Live as LiveSchema,
     ReplayCreate, ReplayUpdate, Replay as ReplaySchema
 )
+from ..schemas.question import LiveMessageCreate, LiveMessageItem
+from .auth import get_current_user_optional
 
 router = APIRouter(prefix="/live", tags=["live"])
 
@@ -171,3 +175,49 @@ async def delete_replay(
     db_replay.is_active = False
     await db.commit()
     return None
+
+
+# -------- 直播间聊天消息 --------
+
+@router.get("/lives/{live_id}/messages", response_model=List[LiveMessageItem])
+async def get_live_messages(
+    live_id: int,
+    limit: int = 50,
+    db: AsyncSession = Depends(get_db),
+):
+    """获取最近的直播间消息（按时间倒序，再翻转为正序返回）。"""
+    res = await db.execute(
+        select(LiveMessage)
+        .where(LiveMessage.live_id == live_id)
+        .order_by(desc(LiveMessage.id))
+        .limit(limit)
+    )
+    items = list(reversed(res.scalars().all()))
+    return items
+
+
+@router.post("/lives/{live_id}/messages", response_model=LiveMessageItem)
+async def send_live_message(
+    live_id: int,
+    payload: LiveMessageCreate,
+    db: AsyncSession = Depends(get_db),
+    user: Optional[User] = Depends(get_current_user_optional),
+):
+    """发送直播间消息（已登录使用昵称，否则匿名）"""
+    content = (payload.content or "").strip()
+    if not content:
+        raise HTTPException(400, "消息内容不能为空")
+    res = await db.execute(select(Live).where(Live.id == live_id, Live.is_active == True))
+    live = res.scalar_one_or_none()
+    if not live:
+        raise HTTPException(404, "直播不存在")
+    msg = LiveMessage(
+        live_id=live_id,
+        user_id=user.id if user else None,
+        nickname=(user.nickname if user else "游客"),
+        content=content,
+    )
+    db.add(msg)
+    await db.commit()
+    await db.refresh(msg)
+    return msg

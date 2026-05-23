@@ -1,171 +1,139 @@
-# 导游服务平台后端API
+# 导游服务平台后端 API
 
-## 项目简介
+基于 **Python 3.10+ / FastAPI / SQLAlchemy 2 / MySQL** 的异步后端服务，配套 `frontend/` 微信小程序使用。
 
-导游服务平台后端API是一个基于Python 3.12和FastAPI框架开发的异步后端服务，为微信小程序前端提供数据支持。
+## 数据库
 
-## 技术栈
+- 引擎：MySQL（已安装并运行在 `localhost:3306`）
+- 数据库名：`guide`（启动时若不存在会自动创建）
+- 字符集：`utf8mb4`
+- 默认用户：`root`，无密码
 
-- **Python**: 3.12
-- **Web框架**: FastAPI (异步)
-- **数据库**: MySQL (localhost:3306)
-- **ORM**: SQLAlchemy 2.0 (异步)
-- **依赖管理**: pip
+如需自定义连接，请编辑 [`backend/.env`](.env) 中的 `DATABASE_URL`。
 
-## 项目结构
+## 启动
 
-```
-backend/
-├── app/
-│   ├── api/          # API接口
-│   ├── models/       # 数据模型
-│   ├── schemas/      # Pydantic模型
-│   ├── database/     # 数据库配置
-│   └── utils/        # 工具函数
-├── main.py           # 主应用
-├── requirements.txt  # 依赖文件
-├── .env              # 环境变量
-├── start.sh          # 启动脚本(Linux/macOS)
-├── start.bat         # 启动脚本(Windows)
-└── README.md         # 项目说明
-```
-
-## 数据库配置
-
-- **主机**: localhost
-- **端口**: 3306
-- **数据库名**: guideshope
-- **用户名**: root
-- **密码**: (空)
-
-## 安装步骤
-
-### 1. 克隆项目
+### Windows
 
 ```bash
-git clone <repository-url>
 cd backend
-```
-
-### 2. 启动服务
-
-#### Windows系统
-
-```bash
 ./start.bat
 ```
 
-#### Linux/macOS系统
+### Linux / macOS
 
 ```bash
+cd backend
 chmod +x start.sh
 ./start.sh
 ```
 
-启动脚本会自动完成以下操作：
-- 创建Python虚拟环境
-- 激活虚拟环境
-- 升级pip
-- 安装依赖
-- 初始化数据库
-- 启动后端服务
+启动后：
 
-## API接口
+- 服务地址：http://localhost:8000
+- Swagger：http://localhost:8000/docs
+- 健康检查：http://localhost:8000/health
 
-### 基础URL
+首次启动会自动建库建表并写入种子数据（课程、题库、直播、回放、商品、AI 测评）。
 
-```
-http://localhost:8000/api
-```
+## API 一览
 
-### 接口列表
+### 鉴权 `/api/auth`
 
-#### 1. 课程相关
+| 方法 | 路径    | 说明                                           |
+| ---- | ------- | ---------------------------------------------- |
+| POST | /wechat | 微信小程序登录（未配置 APPID 时走开发态 mock） |
+| POST | /guest  | 游客登录，返回 token                           |
+| GET  | /me     | 获取当前登录用户                               |
+| PUT  | /me     | 更新昵称/头像/手机                             |
 
-- `GET /api/courses` - 获取课程列表
-- `GET /api/courses/{course_id}` - 获取课程详情
-- `POST /api/courses` - 创建课程
-- `PUT /api/courses/{course_id}` - 更新课程
-- `DELETE /api/courses/{course_id}` - 删除课程
+返回结构：`{ access_token, user }`。前端需将 `access_token` 存入本地，并在后续请求 `Authorization: Bearer <token>` 头中携带。
 
-#### 2. 产品相关
+### 课程 `/api/courses`
 
-- `GET /api/products` - 获取产品列表
-- `GET /api/products/{product_id}` - 获取产品详情
-- `POST /api/products` - 创建产品
-- `PUT /api/products/{product_id}` - 更新产品
-- `DELETE /api/products/{product_id}` - 删除产品
+- `GET /` 列表（支持 `category`）
+- `GET /{id}` 详情
+- `POST/PUT/DELETE` 管理接口
 
-#### 3. 用户相关
+### 题库 / 考试
 
-- `GET /api/users` - 获取用户列表
-- `GET /api/users/{user_id}` - 获取用户详情
-- `POST /api/users` - 创建用户
-- `PUT /api/users/{user_id}` - 更新用户
-- `DELETE /api/users/{user_id}` - 删除用户
+- `GET /api/questions` 题目列表（含答案，刷题用）
+- `GET /api/questions/{id}` 单题
+- `POST /api/exams/start` 开始考试，返回 `exam_id` + 抽到的题目（不含答案）
+- `POST /api/exams/{exam_id}/submit` 交卷评分
+- `GET /api/exams/{exam_id}` 查询考试结果
 
-#### 4. 直播相关
+### 直播 `/api/live`
 
-- `GET /api/live/lives` - 获取直播列表
-- `GET /api/live/lives/{live_id}` - 获取直播详情
-- `POST /api/live/lives` - 创建直播
-- `PUT /api/live/lives/{live_id}` - 更新直播
-- `DELETE /api/live/lives/{live_id}` - 删除直播
+- `GET /lives` 直播列表 / `GET /lives/{id}` 直播详情
+- `GET /replays` 回放列表 / `GET /replays/{id}` 回放详情
+- `GET /lives/{id}/messages` 拉取最近消息
+- `POST /lives/{id}/messages` 发送消息（已登录使用昵称，否则匿名）
 
-- `GET /api/live/replays` - 获取回放列表
-- `GET /api/live/replays/{replay_id}` - 获取回放详情
-- `POST /api/live/replays` - 创建回放
-- `PUT /api/live/replays/{replay_id}` - 更新回放
-- `DELETE /api/live/replays/{replay_id}` - 删除回放
+### 商品 `/api/products`
 
-#### 5. AI测评相关
+- `GET /` 列表（支持 `category`、`is_new`、`is_hot`）
+- `GET /{id}` 详情
 
-- `GET /api/ai-test/tests` - 获取测评列表
-- `GET /api/ai-test/tests/{test_id}` - 获取测评详情
-- `POST /api/ai-test/tests` - 创建测评
-- `PUT /api/ai-test/tests/{test_id}` - 更新测评
-- `DELETE /api/ai-test/tests/{test_id}` - 删除测评
+### 我的（需登录）`/api/me`
 
-- `GET /api/ai-test/results` - 获取测评结果列表
-- `POST /api/ai-test/results` - 创建测评结果
+- `GET /courses` 我的课程进度（仅 ID + progress）
+- `GET /courses/detail` 我的课程列表（含课程详情，前端可直接渲染）
+- `POST /courses/{course_id}/enroll` 加入学习
+- `PUT /courses/{course_id}/progress` 更新进度
 
-## 数据库初始化
+### 订单 `/api/orders`
 
-服务启动时会自动执行以下操作：
-1. 检查数据库是否存在，不存在则创建
-2. 创建所有表结构
-3. 初始化基础数据
+现有 CRUD，未在本次范围调整。
 
-## 开发模式
+### AI 测评 `/api/ai-test`
 
-服务默认以开发模式启动，支持热重载。
+保留原有 CRUD（题目/结果），AI 模型对接为后续工作。
 
-## 健康检查
+## 与前端约定
 
-可以通过以下接口检查服务状态：
+- 前端 [`frontend/utils/api.js`](../frontend/utils/api.js) 已封装上述接口。
+- 默认基址 `http://localhost:8000/api`，开发者工具中需勾选「不校验合法域名」。
+- 登录流程：
+  1. 小程序调用 `wx.login` 拿到 `code`；
+  2. 前端 `POST /api/auth/wechat { code }`；
+  3. 收到 `access_token`，写入本地存储；
+  4. 后续请求带 `Authorization: Bearer <token>`。
+
+未配置 `WECHAT_APPID/WECHAT_SECRET` 时，后端使用 `dev_<code>` 当作 `openid` 自动建用户，方便本地联调。
+
+## 目录结构
 
 ```
-GET http://localhost:8000/health
+backend/
+├── main.py
+├── requirements.txt
+├── .env
+├── start.bat / start.sh
+└── app/
+    ├── api/         # FastAPI 路由
+    │   ├── auth.py / users.py / courses.py / products.py
+    │   ├── live.py / orders.py / ai_test.py
+    │   ├── questions.py  (题库 + 考试)
+    │   └── me.py         (个人中心：学习进度)
+    ├── models/      # SQLAlchemy ORM
+    ├── schemas/     # Pydantic v2
+    ├── database/
+    │   ├── session.py    (异步 engine)
+    │   └── init_db.py    (建库 + 建表 + 种子数据)
+    └── utils/
 ```
-
-## API文档
-
-FastAPI会自动生成API文档，可以通过以下地址访问：
-
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
 
 ## 注意事项
 
-1. 确保MySQL服务已启动
-2. 确保MySQL用户root有创建数据库的权限
-3. 首次启动时会自动创建数据库和表结构
-4. 服务默认运行在8000端口
+1. 必须先保证本机 MySQL 已启动，root 用户具备建库权限。
+2. 默认表使用 InnoDB + utf8mb4。
+3. 题库表 `questions` / `exam_sessions` 使用 JSON 列，需 MySQL 5.7+ 支持。
+4. CORS 默认 `*`，正式部署请改 `.env` 的 `ALLOWED_ORIGINS`。
 
 ## 后续计划
 
-1. 添加用户认证和授权
-2. 实现文件上传功能
-3. 集成AI模型API
-4. 添加日志系统
-5. 实现缓存机制
+- 接入真实 AI 服务（DeepSeek 等）做导游词测评
+- 接入支付能力（订单已有结构）
+- WebSocket 直播间实时消息推送
+- 文件上传 / 头像 OSS

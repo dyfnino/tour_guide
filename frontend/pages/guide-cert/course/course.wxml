@@ -1,0 +1,19 @@
+<view class="course-page" wx:if="{{course}}">
+  <image class="cover" src="{{course.image}}" mode="aspectFill"></image>
+  <view class="info">
+    <text class="name">{{course.name}}</text>
+    <text class="desc">{{course.desc}}</text>
+    <view class="meta">
+      <text class="price">{{course.price}}</text>
+      <text class="rating">{{course.rating}} · {{course.students}}</text>
+    </view>
+    <text class="lecturer">主讲：{{course.lecturer}}</text>
+  </view>
+  <view class="section">
+    <text class="section-title">课程介绍</text>
+    <text class="section-text">本课程系统讲解{{course.name}}相关知识，帮助学员快速掌握考点与实操技巧，附配套习题与答疑服务。</text>
+  </view>
+  <view class="footer">
+    <button class="enroll-btn" bindtap="onEnroll">立即学习</button>
+  </view>
+</view>

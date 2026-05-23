@@ -2,14 +2,14 @@
   <!-- 直播入口 -->
   <view class="live-entry" bindtap="onLiveTap">
     <view class="live-banner">
-      <image src="https://picsum.photos/800/400?random=12" class="live-image" mode="aspectFill"></image>
+      <image src="{{liveRoom.image}}" class="live-image" mode="aspectFill"></image>
       <view class="live-overlay">
         <view class="live-status">
           <text class="live-dot"></text>
           <text class="live-text">正在直播</text>
         </view>
-        <text class="live-title">导游资格证考试备考攻略</text>
-        <text class="live-subtitle">主讲：张老师 | 在线人数：1234</text>
+        <text class="live-title">{{liveRoom.title}}</text>
+        <text class="live-subtitle">主讲：{{liveRoom.lecturer}} | 在线人数：{{liveRoom.online}}</text>
       </view>
     </view>
   </view>
@@ -21,12 +21,12 @@
       <text class="replay-more" bindtap="onReplayMoreTap">更多 <text class="arrow">›</text></text>
     </view>
     <view class="replay-list">
-      <view class="replay-item card-shadow" bindtap="onReplayTap" wx:for="{{replayList}}" wx:key="id">
+      <view class="replay-item card-shadow" wx:for="{{replayList}}" wx:key="id" data-id="{{item.id}}" bindtap="onReplayTap">
         <image src="{{item.image}}" class="replay-image" mode="aspectFill"></image>
         <view class="replay-info">
           <text class="replay-name">{{item.name}}</text>
           <view class="replay-footer">
-            <text class="replay-lecturer">{{item.lecturer}}</text>
+            <text class="replay-lecturer">主讲：{{item.lecturer}} · {{item.duration}}</text>
             <text class="replay-views">{{item.views}}次观看</text>
           </view>
         </view>

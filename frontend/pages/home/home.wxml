@@ -75,23 +75,13 @@
       <text class="section-more" bindtap="onCourseMoreTap">更多 <text class="arrow">›</text></text>
     </view>
     <view class="course-list">
-      <view class="course-item card-shadow" bindtap="onCourseTap">
-        <image src="https://picsum.photos/300/180?random=1" class="course-image" mode="aspectFill"></image>
+      <view class="course-item card-shadow" wx:for="{{courseList}}" wx:key="id" data-id="{{item.id}}" bindtap="onCourseTap">
+        <image src="{{item.image}}" class="course-image" mode="aspectFill"></image>
         <view class="course-info">
-          <text class="course-name">导游基础知识精讲</text>
+          <text class="course-name">{{item.name}}</text>
           <view class="course-footer">
-            <text class="course-price text-primary">免费</text>
-            <text class="course-students">2000+人已学</text>
-          </view>
-        </view>
-      </view>
-      <view class="course-item card-shadow" bindtap="onCourseTap">
-        <image src="https://picsum.photos/300/180?random=2" class="course-image" mode="aspectFill"></image>
-        <view class="course-info">
-          <text class="course-name">导游业务能力提升</text>
-          <view class="course-footer">
-            <text class="course-price text-primary">¥99</text>
-            <text class="course-students">1500+人已学</text>
+            <text class="course-price text-primary">{{item.price}}</text>
+            <text class="course-students">{{item.students}}</text>
           </view>
         </view>
       </view>

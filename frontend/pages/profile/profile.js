@@ -1,116 +1,94 @@
 Page({
-  /**
-   * 页面的初始数据
-   */
   data: {
+    isLogin: false,
     userInfo: {
-      name: '游客123456',
+      avatarUrl: 'https://picsum.photos/80/80?random=12',
+      nickName: '游客',
       action: '点击登录/注册'
     }
   },
 
-  /**
-   * 生命周期函数--监听页面加载
-   */
-  onLoad(options) {
-    console.log('Profile page loaded');
-  },
-
-  /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
-  onReady() {
-    console.log('Profile page ready');
-  },
-
-  /**
-   * 生命周期函数--监听页面显示
-   */
   onShow() {
-    console.log('Profile page shown');
+    this.loadUserInfo();
   },
 
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide() {
-    console.log('Profile page hidden');
+  loadUserInfo() {
+    const stored = wx.getStorageSync('userInfo');
+    if (stored && stored.nickName) {
+      this.setData({
+        isLogin: true,
+        userInfo: {
+          avatarUrl: stored.avatarUrl || this.data.userInfo.avatarUrl,
+          nickName: stored.nickName,
+          action: '已登录'
+        }
+      });
+    } else {
+      this.setData({
+        isLogin: false,
+        userInfo: {
+          avatarUrl: 'https://picsum.photos/80/80?random=12',
+          nickName: '游客',
+          action: '点击登录/注册'
+        }
+      });
+    }
   },
 
-  /**
-   * 生命周期函数--监听页面卸载
-   */
-  onUnload() {
-    console.log('Profile page unloaded');
-  },
-
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh() {
-    console.log('Profile page pull down refresh');
-    // 模拟刷新数据
-    setTimeout(() => {
-      wx.stopPullDownRefresh();
-    }, 1000);
-  },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom() {
-    console.log('Profile page reach bottom');
-  },
-
-  /**
-   * 用户点击右上角分享
-   */
   onShareAppMessage() {
-    return {
-      title: '个人中心',
-      path: '/pages/profile/profile'
-    };
+    return { title: '导游服务平台', path: '/pages/home/home' };
   },
 
-  // 登录/注册
+  // 登录入口
   onLoginTap() {
-    console.log('Login tapped');
-    // 实现登录逻辑
+    if (this.data.isLogin) {
+      wx.showActionSheet({
+        itemList: ['退出登录'],
+        success: (res) => {
+          if (res.tapIndex === 0) {
+            wx.removeStorageSync('userInfo');
+            wx.removeStorageSync('token');
+            this.loadUserInfo();
+            wx.showToast({ title: '已退出', icon: 'success' });
+          }
+        }
+      });
+    } else {
+      wx.navigateTo({ url: '/pages/login/login' });
+    }
   },
 
-  // 我的课程
   onMyCoursesTap() {
-    console.log('My courses tapped');
-    // 跳转到我的课程页面
+    wx.navigateTo({ url: '/pages/profile/my-courses/my-courses' });
   },
 
-  // 我的订单
   onMyOrdersTap() {
-    console.log('My orders tapped');
-    // 跳转到我的订单页面
+    wx.navigateTo({ url: '/pages/profile/orders/orders' });
   },
 
-  // 分销中心
   onDistributionTap() {
-    console.log('Distribution tapped');
-    // 跳转到分销中心页面
+    wx.navigateTo({ url: '/pages/profile/placeholder/placeholder?title=分销中心' });
   },
 
-  // 在线客服
+  onWalletTap() {
+    wx.navigateTo({ url: '/pages/profile/placeholder/placeholder?title=我的钱包' });
+  },
+
+  onSettingsTap() {
+    wx.navigateTo({ url: '/pages/profile/placeholder/placeholder?title=设置' });
+  },
+
   onCustomerServiceTap() {
-    console.log('Customer service tapped');
-    // 跳转到在线客服页面
+    wx.makePhoneCall({ phoneNumber: '4001234567', fail: () => {
+      wx.showToast({ title: '客服：400-123-4567', icon: 'none' });
+    }});
   },
 
-  // 常见问题
   onFAQTap() {
-    console.log('FAQ tapped');
-    // 跳转到常见问题页面
+    wx.navigateTo({ url: '/pages/profile/placeholder/placeholder?title=常见问题' });
   },
 
-  // 联系我们
   onContactUsTap() {
-    console.log('Contact us tapped');
-    // 跳转到联系我们页面
+    wx.showModal({ title: '联系我们', content: '客服电话：400-123-4567\n邮箱：support@guide.com', showCancel: false });
   }
-})
+});

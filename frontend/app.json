@@ -1,12 +1,21 @@
 {
   "pages": [
-    "pages/login/login",
     "pages/home/home",
     "pages/guide-cert/guide-cert",
     "pages/specialty/specialty",
     "pages/profile/profile",
     "pages/live/live",
-    "pages/ai-test/ai-test"
+    "pages/ai-test/ai-test",
+    "pages/login/login",
+    "pages/guide-cert/practice/practice",
+    "pages/guide-cert/mock-exam/mock-exam",
+    "pages/guide-cert/course/course",
+    "pages/live/live-room/live-room",
+    "pages/live/replay/replay",
+    "pages/profile/orders/orders",
+    "pages/profile/orders/detail/detail",
+    "pages/profile/my-courses/my-courses",
+    "pages/profile/placeholder/placeholder"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -42,6 +51,6 @@
     "request": 10000,
     "downloadFile": 10000
   },
-  "debug": true,
+  "debug": false,
   "sitemapLocation": "sitemap.json"
 }

@@ -1,0 +1,149 @@
+.practice-container {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding: 24rpx;
+  padding-bottom: 200rpx;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24rpx;
+}
+.progress {
+  font-size: 28rpx;
+  color: #595959;
+}
+.type-tag {
+  background: #1677ff;
+  color: #fff;
+  font-size: 22rpx;
+  padding: 4rpx 16rpx;
+  border-radius: 20rpx;
+}
+
+.question-card {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 32rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+}
+
+.title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #262626;
+  margin-bottom: 32rpx;
+  line-height: 1.6;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  padding: 24rpx;
+  background: #f7f8fa;
+  border-radius: 12rpx;
+  border: 2rpx solid transparent;
+}
+
+.option.selected {
+  border-color: #1677ff;
+  background: #e6f0ff;
+}
+
+.option.correct {
+  border-color: #52c41a;
+  background: #f0fbe6;
+}
+
+.option.wrong {
+  border-color: #ff4d4f;
+  background: #fff1f0;
+}
+
+.opt-letter {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  background: #fff;
+  text-align: center;
+  line-height: 48rpx;
+  font-size: 24rpx;
+  color: #595959;
+  margin-right: 24rpx;
+  border: 1rpx solid #d9d9d9;
+}
+
+.opt-text {
+  flex: 1;
+  font-size: 28rpx;
+  color: #262626;
+}
+
+.analysis {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 32rpx;
+  margin-top: 24rpx;
+}
+.result {
+  display: block;
+  font-size: 30rpx;
+  font-weight: bold;
+  margin-bottom: 24rpx;
+}
+.result.right {
+  color: #52c41a;
+}
+.result.fail {
+  color: #ff4d4f;
+}
+.analysis-title {
+  display: block;
+  font-size: 28rpx;
+  color: #262626;
+  margin-bottom: 12rpx;
+}
+.analysis-text {
+  display: block;
+  font-size: 26rpx;
+  color: #595959;
+  line-height: 1.7;
+}
+
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  padding: 24rpx;
+  display: flex;
+  gap: 16rpx;
+  box-shadow: 0 -2rpx 8rpx rgba(0, 0, 0, 0.05);
+}
+
+.btn {
+  flex: 1;
+  font-size: 28rpx;
+  border-radius: 8rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+}
+.btn-prev {
+  background: #f0f0f0;
+  color: #595959;
+}
+.btn-submit,
+.btn-next {
+  background: #1677ff;
+  color: #fff;
+}

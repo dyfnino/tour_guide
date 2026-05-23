@@ -37,6 +37,12 @@
   display: block;
 }
 
+.user-arrow {
+  font-size: 40rpx;
+  color: rgba(255, 255, 255, 0.8);
+  margin-left: auto;
+}
+
 /* 功能入口 */
 .function-section {
   background-color: #fff;

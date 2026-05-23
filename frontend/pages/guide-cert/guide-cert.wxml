@@ -2,28 +2,38 @@
   <!-- 子导航 -->
   <view class="sub-nav">
     <scroll-view scroll-x="{{true}}" class="sub-nav-scroll">
-      <view class="sub-nav-item {{currentTab === 'online' ? 'active' : ''}}" bindtap="switchTab('online')">网课点播</view>
-      <view class="sub-nav-item {{currentTab === 'practice' ? 'active' : ''}}" bindtap="switchTab('practice')">考试刷题</view>
-      <view class="sub-nav-item {{currentTab === 'mock' ? 'active' : ''}}" bindtap="switchTab('mock')">模拟考试</view>
-      <view class="sub-nav-item {{currentTab === 'live' ? 'active' : ''}}" bindtap="switchTab('live')">直播网课</view>
-      <view class="sub-nav-item {{currentTab === 'ai' ? 'active' : ''}}" bindtap="switchTab('ai')">AI测评</view>
+      <view
+        wx:for="{{tabs}}"
+        wx:key="key"
+        class="sub-nav-item {{currentTab === item.key ? 'active' : ''}}"
+        data-tab="{{item.key}}"
+        bindtap="switchTab"
+      >{{item.name}}</view>
     </scroll-view>
   </view>
 
   <!-- 课程分类 -->
   <view class="category-container">
     <view class="category-list">
-      <view class="category-item active" bindtap="selectCategory('all')">全部</view>
-      <view class="category-item" bindtap="selectCategory('basic')">基础知识</view>
-      <view class="category-item" bindtap="selectCategory('business')">导游业务</view>
-      <view class="category-item" bindtap="selectCategory('policy')">政策法规</view>
-      <view class="category-item" bindtap="selectCategory('local')">地方导游</view>
+      <view
+        wx:for="{{categories}}"
+        wx:key="key"
+        class="category-item {{selectedCategory === item.key ? 'active' : ''}}"
+        data-category="{{item.key}}"
+        bindtap="selectCategory"
+      >{{item.name}}</view>
     </view>
   </view>
 
   <!-- 课程列表 -->
   <view class="course-list">
-    <view class="course-item card-shadow" wx:for="{{courseList}}" wx:key="id">
+    <view
+      class="course-item card-shadow"
+      wx:for="{{courseList}}"
+      wx:key="id"
+      data-id="{{item.id}}"
+      bindtap="onCourseTap"
+    >
       <view class="course-content">
         <image src="{{item.image}}" class="course-image" mode="aspectFill"></image>
         <view class="course-info">
@@ -36,5 +46,6 @@
         </view>
       </view>
     </view>
+    <view class="empty-tip" wx:if="{{courseList.length === 0}}">该分类下暂无课程</view>
   </view>
 </view>

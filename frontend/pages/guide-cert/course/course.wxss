@@ -1,0 +1,84 @@
+.course-page {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding-bottom: 160rpx;
+}
+
+.cover {
+  width: 100%;
+  height: 400rpx;
+}
+
+.info {
+  background: #fff;
+  padding: 32rpx;
+}
+.name {
+  display: block;
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #262626;
+  margin-bottom: 16rpx;
+}
+.desc {
+  display: block;
+  font-size: 26rpx;
+  color: #8c8c8c;
+  margin-bottom: 16rpx;
+}
+.meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+.price {
+  font-size: 36rpx;
+  color: #ff4d4f;
+  font-weight: bold;
+}
+.rating {
+  font-size: 24rpx;
+  color: #8c8c8c;
+}
+.lecturer {
+  font-size: 26rpx;
+  color: #595959;
+}
+
+.section {
+  background: #fff;
+  margin-top: 24rpx;
+  padding: 32rpx;
+}
+.section-title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #262626;
+  margin-bottom: 16rpx;
+}
+.section-text {
+  display: block;
+  font-size: 26rpx;
+  color: #595959;
+  line-height: 1.7;
+}
+
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  padding: 16rpx 24rpx;
+  box-shadow: 0 -2rpx 8rpx rgba(0, 0, 0, 0.05);
+}
+.enroll-btn {
+  background: #1677ff;
+  color: #fff;
+  height: 88rpx;
+  line-height: 88rpx;
+  font-size: 30rpx;
+  border-radius: 44rpx;
+}

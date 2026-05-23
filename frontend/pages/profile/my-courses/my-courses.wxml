@@ -1,0 +1,20 @@
+<view class="mc-container">
+  <view class="empty" wx:if="{{list.length === 0}}">暂无在学课程</view>
+  <view
+    class="mc-item"
+    wx:for="{{list}}"
+    wx:key="id"
+    data-id="{{item.id}}"
+    bindtap="onCourseTap"
+  >
+    <image class="mc-image" src="{{item.image}}" mode="aspectFill"></image>
+    <view class="mc-info">
+      <text class="mc-name">{{item.name}}</text>
+      <text class="mc-desc">主讲：{{item.lecturer}} · {{item.desc}}</text>
+      <view class="mc-progress">
+        <view class="mc-bar"><view class="mc-bar-inner" style="width: {{item.progress}}%"></view></view>
+        <text class="mc-progress-text">已学 {{item.progress}}%</text>
+      </view>
+    </view>
+  </view>
+</view>

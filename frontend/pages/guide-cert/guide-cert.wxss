@@ -31,7 +31,7 @@
 }
 
 .sub-nav-item.active::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 50%;
@@ -132,4 +132,11 @@
 .course-rating {
   font-size: 24rpx;
   color: #8c8c8c;
+}
+
+.empty-tip {
+  text-align: center;
+  color: #bfbfbf;
+  font-size: 26rpx;
+  padding: 80rpx 0;
 }

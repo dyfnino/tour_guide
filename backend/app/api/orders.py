@@ -39,12 +39,12 @@ async def create_order(
             product = result.scalar_one_or_none()
             if not product:
                 raise HTTPException(status_code=404, detail=f"商品 {item_data.product_id} 不存在")
-            item_amount = product.price * item_data.quantity
+            item_amount = float(product.price) * item_data.quantity
             total_amount += item_amount
             order_item = OrderItem(
                 product_id=item_data.product_id,
                 quantity=item_data.quantity,
-                price=product.price,
+                price=float(product.price),
             )
             order_items.append(order_item)
 
@@ -61,8 +61,11 @@ async def create_order(
         )
         db.add(db_order)
         await db.commit()
-        await db.refresh(db_order)
-        return db_order
+        # 重新查询并预加载 items
+        res = await db.execute(
+            select(Order).options(selectinload(Order.items)).where(Order.id == db_order.id)
+        )
+        return res.scalar_one()
 
     except IntegrityError:
         await db.rollback()

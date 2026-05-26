@@ -223,3 +223,213 @@
 .send-button::after {
   border: none;
 }
+
+/* ===== 多模态扩展样式 ===== */
+
+.tool-icon {
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+  border-radius: 50%;
+  background: #f5f5f5;
+  margin-right: 8rpx;
+}
+.tool-icon.recording {
+  background: #ff4d4f;
+  color: #fff;
+}
+
+/* 待发素材 */
+.pending-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  padding: 12rpx 24rpx;
+  background: #fafafa;
+  border-top: 1rpx solid #f0f0f0;
+}
+.pending-img {
+  position: relative;
+  width: 120rpx;
+  height: 120rpx;
+}
+.pending-img image {
+  width: 100%;
+  height: 100%;
+  border-radius: 12rpx;
+}
+.pending-audio {
+  position: relative;
+  height: 60rpx;
+  padding: 0 24rpx;
+  display: flex;
+  align-items: center;
+  background: #e6f7ff;
+  border-radius: 30rpx;
+  font-size: 24rpx;
+  color: #1677ff;
+}
+.remove {
+  position: absolute;
+  right: -8rpx;
+  top: -8rpx;
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+}
+
+/* 消息中的图片/语音 */
+.message-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+  margin-top: 12rpx;
+}
+.message-image {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 12rpx;
+}
+.message-audio {
+  margin-top: 8rpx;
+  padding: 8rpx 24rpx;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 24rpx;
+  font-size: 24rpx;
+  color: #1677ff;
+  display: inline-block;
+}
+.message-model {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 20rpx;
+  color: #bfbfbf;
+}
+
+/* 测评作答区 */
+.eval-section {
+  background: #fff;
+  margin: 16rpx;
+  padding: 24rpx;
+  border-radius: 16rpx;
+}
+.eval-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+.eval-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #262626;
+}
+.eval-back {
+  font-size: 24rpx;
+  color: #1677ff;
+}
+.eval-topic {
+  background: #fafafa;
+  padding: 16rpx;
+  border-radius: 12rpx;
+  margin-bottom: 16rpx;
+}
+.topic-label {
+  display: block;
+  font-size: 22rpx;
+  color: #8c8c8c;
+  margin-bottom: 6rpx;
+}
+.topic-text {
+  display: block;
+  font-size: 26rpx;
+  color: #262626;
+  line-height: 1.6;
+}
+.eval-input {
+  width: 100%;
+  min-height: 200rpx;
+  padding: 16rpx;
+  border: 1rpx solid #e8e8e8;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+  color: #262626;
+  box-sizing: border-box;
+  background: #fff;
+}
+.eval-tools {
+  display: flex;
+  gap: 12rpx;
+  margin-top: 16rpx;
+}
+.tool-btn {
+  flex: 1;
+  height: 72rpx;
+  font-size: 24rpx;
+  background: #f5f5f5;
+  color: #262626;
+  border-radius: 36rpx;
+  padding: 0 16rpx;
+  line-height: 72rpx;
+}
+.tool-btn.recording {
+  background: #ff4d4f;
+  color: #fff;
+}
+.tool-btn.primary {
+  background: #1677ff;
+  color: #fff;
+}
+
+/* 测评结果 */
+.eval-result {
+  margin-top: 24rpx;
+  padding: 24rpx;
+  background: linear-gradient(135deg, #f0f5ff, #e6f7ff);
+  border-radius: 16rpx;
+}
+.score-row {
+  text-align: center;
+  margin-bottom: 16rpx;
+}
+.score {
+  font-size: 80rpx;
+  font-weight: bold;
+  color: #1677ff;
+}
+.score-suffix {
+  font-size: 28rpx;
+  color: #8c8c8c;
+}
+.result-block {
+  margin-top: 16rpx;
+}
+.result-label {
+  display: block;
+  font-size: 24rpx;
+  color: #8c8c8c;
+  margin-bottom: 8rpx;
+}
+.result-text {
+  display: block;
+  font-size: 26rpx;
+  color: #262626;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+.model-tip {
+  display: block;
+  margin-top: 16rpx;
+  font-size: 22rpx;
+  color: #bfbfbf;
+  text-align: right;
+}

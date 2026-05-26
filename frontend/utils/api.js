@@ -102,6 +102,38 @@ const pollOrderPaid = async (orderId, times = 3, interval = 1500) => {
 const confirmReceipt = (orderId) =>
   request(`/orders/${orderId}`, { method: 'PUT', data: { status: 'completed' } });
 
+// ---- AI 测评 ----
+const aiChat = (data) => request('/ai-test/chat', { method: 'POST', data });
+const aiEvaluate = (data) => request('/ai-test/evaluate', { method: 'POST', data });
+const listAiTests = () => request('/ai-test/tests');
+// 上传单个文件（图片或音频）到 /ai-test/upload，返回 {path, url}
+const uploadAiMedia = (filePath, name = 'file') => {
+  const token = wx.getStorageSync('token');
+  const header = {};
+  if (token && !String(token).startsWith('mock-')) {
+    header['Authorization'] = `Bearer ${token}`;
+  }
+  return new Promise((resolve, reject) => {
+    wx.uploadFile({
+      url: BASE_URL + '/ai-test/upload',
+      filePath,
+      name,
+      header,
+      success: (res) => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          try {
+            const data = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
+            resolve(data);
+          } catch (e) { reject(e); }
+        } else {
+          reject({ statusCode: res.statusCode, data: res.data });
+        }
+      },
+      fail: reject
+    });
+  });
+};
+
 // ---- 我的（学习进度） ----
 const myCoursesDetail = () => request('/me/courses/detail');
 const enrollCourse = (courseId) =>
@@ -120,4 +152,5 @@ module.exports = {
   listProducts,
   myCoursesDetail, enrollCourse, updateProgress,
   createCourseOrder, payOrder, prepayOrder, mockPaidOrder, getOrder, confirmReceipt, pollOrderPaid,
+  aiChat, aiEvaluate, listAiTests, uploadAiMedia,
 };

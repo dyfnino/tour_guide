@@ -189,3 +189,14 @@
 .empty-text {
   font-size: 26rpx;
 }
+
+.load-more {
+  text-align: center;
+  padding: 30rpx 0;
+  font-size: 24rpx;
+  color: #1677ff;
+}
+
+.load-more.no-more {
+  color: #bfbfbf;
+}

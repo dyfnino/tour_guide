@@ -1,66 +1,127 @@
 <view class="ai-test-container">
-  <!-- AI测评介绍 -->
-  <view class="ai-intro">
+  <!-- 顶部介绍 -->
+  <view class="ai-intro" wx:if="{{!evalMode}}">
     <view class="ai-banner">
       <image src="https://picsum.photos/800/400?random=16" class="ai-image" mode="aspectFill"></image>
       <view class="ai-overlay">
-        <text class="ai-title">AI导游测评</text>
-        <text class="ai-subtitle">智能评估，精准提升</text>
+        <text class="ai-title">AI 导游测评（Qwen 多模态）</text>
+        <text class="ai-subtitle">支持文字 / 图片 / 语音 三模态输入</text>
       </view>
-    </view>
-    <view class="ai-description">
-      <text class="description-text">使用先进的AI技术，为您提供专业的导游能力测评服务。通过模拟考试、面试问答等方式，全面评估您的导游技能水平，并提供个性化的提升建议。</text>
     </view>
   </view>
 
   <!-- 测评类型 -->
-  <view class="test-types">
+  <view class="test-types" wx:if="{{!evalMode}}">
     <view class="test-header">
-      <text class="test-title">测评类型</text>
+      <text class="test-title">选择测评类型</text>
     </view>
     <view class="test-list">
-      <view class="test-item card-shadow" bindtap="onTestTypeTap">
+      <view class="test-item card-shadow" data-type="theory" bindtap="onTestTypeTap">
         <view class="test-icon">📝</view>
         <text class="test-name">理论知识测评</text>
-        <text class="test-desc">测试导游基础知识掌握程度</text>
+        <text class="test-desc">文字答题 · AI 判分</text>
       </view>
-      <view class="test-item card-shadow" bindtap="onTestTypeTap">
+      <view class="test-item card-shadow" data-type="lecture" bindtap="onTestTypeTap">
         <view class="test-icon">🎤</view>
         <text class="test-name">导游词讲解测评</text>
-        <text class="test-desc">评估导游词创作与讲解能力</text>
+        <text class="test-desc">录音作答 · 语音+视觉</text>
       </view>
-      <view class="test-item card-shadow" bindtap="onTestTypeTap">
+      <view class="test-item card-shadow" data-type="interview" bindtap="onTestTypeTap">
         <view class="test-icon">💬</view>
         <text class="test-name">面试模拟测评</text>
-        <text class="test-desc">模拟导游面试场景，评估应对能力</text>
+        <text class="test-desc">综合素养评估</text>
       </view>
     </view>
   </view>
 
-  <!-- AI对话区域 -->
-  <view class="chat-section">
+  <!-- 测评作答区 -->
+  <view class="eval-section" wx:if="{{evalMode}}">
+    <view class="eval-header">
+      <text class="eval-title">{{evalType === 'theory' ? '理论知识测评' : (evalType === 'lecture' ? '导游词讲解测评' : '面试模拟测评')}}</text>
+      <text class="eval-back" bindtap="exitEvalMode">← 返回</text>
+    </view>
+    <view class="eval-topic">
+      <text class="topic-label">题目</text>
+      <text class="topic-text">{{evalTopic}}</text>
+    </view>
+
+    <!-- 已上传素材 -->
+    <view class="pending-row" wx:if="{{pendingImages.length || pendingAudio}}">
+      <view class="pending-img" wx:for="{{pendingImages}}" wx:key="url" wx:for-item="img" wx:for-index="i">
+        <image src="{{img.url}}" mode="aspectFill"></image>
+        <view class="remove" data-index="{{i}}" bindtap="removeImage">×</view>
+      </view>
+      <view class="pending-audio" wx:if="{{pendingAudio}}">
+        <text>🎙 录音 {{pendingAudio.duration}}ms</text>
+        <view class="remove" bindtap="removeAudio">×</view>
+      </view>
+    </view>
+
+    <textarea class="eval-input" placeholder="请用文字作答（也可只用图片/录音）" value="{{inputValue}}" bindinput="onInputChange" maxlength="2000" auto-height></textarea>
+
+    <view class="eval-tools">
+      <button class="tool-btn" bindtap="onPickImage">📷 图片</button>
+      <button class="tool-btn {{recording ? 'recording' : ''}}" bindtap="toggleRecord">{{recording ? '■ 停止录音' : '🎙 录音'}}</button>
+      <button class="tool-btn primary" loading="{{sending}}" disabled="{{sending}}" bindtap="onSubmitEvaluation">提交测评</button>
+    </view>
+
+    <!-- 测评结果 -->
+    <view class="eval-result" wx:if="{{evalResult}}">
+      <view class="score-row">
+        <text class="score">{{evalResult.score}}</text>
+        <text class="score-suffix">/ 100</text>
+      </view>
+      <view class="result-block">
+        <text class="result-label">AI 反馈</text>
+        <text class="result-text">{{evalResult.feedback}}</text>
+      </view>
+      <view class="result-block" wx:if="{{evalResult.suggestions}}">
+        <text class="result-label">改进建议</text>
+        <text class="result-text">{{evalResult.suggestions}}</text>
+      </view>
+      <text class="model-tip">{{evalResult.mock ? '模型：' + evalResult.model + '（mock）' : '模型：' + evalResult.model}}</text>
+    </view>
+  </view>
+
+  <!-- AI 对话 -->
+  <view class="chat-section" wx:if="{{!evalMode}}">
     <view class="chat-header">
-      <text class="chat-title">AI助手</text>
+      <text class="chat-title">AI 导游助手</text>
       <text class="chat-status">在线</text>
     </view>
-    <view class="chat-container">
-      <!-- 对话消息 -->
-      <view class="message message-ai">
-        <view class="message-avatar">🤖</view>
-        <view class="message-content">
-          <text class="message-text">你好！我是你的AI导游助手，有什么可以帮助你的吗？</text>
-        </view>
-      </view>
-      <view class="message message-user" wx:for="{{chatMessages}}" wx:key="index">
-        <view class="message-avatar">👤</view>
+    <scroll-view class="chat-container" scroll-y="{{true}}" scroll-top="{{scrollTop}}">
+      <view class="message message-{{item.type}}" wx:for="{{chatMessages}}" wx:key="id">
+        <view class="message-avatar">{{item.type === 'ai' ? '🤖' : '👤'}}</view>
         <view class="message-content">
           <text class="message-text">{{item.content}}</text>
+          <view class="message-images" wx:if="{{item.images && item.images.length}}">
+            <image wx:for="{{item.images}}" wx:key="*this" wx:for-item="img" src="{{img}}" mode="aspectFill" class="message-image" data-url="{{img}}" bindtap="previewImage"></image>
+          </view>
+          <view class="message-audio" wx:if="{{item.audio}}" data-url="{{item.audio}}" bindtap="playAudio">
+            <text>🔊 播放语音</text>
+          </view>
+          <text class="message-model" wx:if="{{item.modelTip}}">{{item.modelTip}}</text>
         </view>
       </view>
+    </scroll-view>
+
+    <!-- 待发素材预览 -->
+    <view class="pending-row" wx:if="{{pendingImages.length || pendingAudio}}">
+      <view class="pending-img" wx:for="{{pendingImages}}" wx:key="url" wx:for-item="img" wx:for-index="i">
+        <image src="{{img.url}}" mode="aspectFill"></image>
+        <view class="remove" data-index="{{i}}" bindtap="removeImage">×</view>
+      </view>
+      <view class="pending-audio" wx:if="{{pendingAudio}}">
+        <text>🎙 {{pendingAudio.duration}}ms</text>
+        <view class="remove" bindtap="removeAudio">×</view>
+      </view>
     </view>
+
     <view class="chat-input">
-      <input type="text" placeholder="输入你的问题..." bindinput="onInputChange" value="{{inputValue}}" class="input-field"></input>
-      <button bindtap="onSendMessage" class="send-button">发送</button>
+      <view class="tool-icon" bindtap="onPickImage">📷</view>
+      <view class="tool-icon {{recording ? 'recording' : ''}}" bindtap="toggleRecord">{{recording ? '■' : '🎙'}}</view>
+      <input type="text" placeholder="输入你的问题..." bindinput="onInputChange" value="{{inputValue}}" class="input-field" confirm-type="send" bindconfirm="onSendMessage"></input>
+      <button bindtap="onSendMessage" class="send-button" loading="{{sending}}" disabled="{{sending}}">发送</button>
     </view>
   </view>
 </view>

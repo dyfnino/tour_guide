@@ -40,6 +40,12 @@
           </view>
         </view>
       </view>
+      <view class="load-more" wx:if="{{hasMore}}" bindtap="loadMoreReplays">
+        <text>{{loadingMore ? '加载中...' : '加载更多'}}</text>
+      </view>
+      <view class="load-more no-more" wx:else>
+        <text>— 没有更多了 —</text>
+      </view>
     </view>
     <view class="empty-state" wx:else>
       <text class="empty-text">暂无回放</text>

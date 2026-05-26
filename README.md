@@ -137,3 +137,47 @@ WX_PAY_NOTIFY_URL=           # 回调地址（必须 HTTPS 公网可达）
 
 - **本地联调**：保持 `WX_PAY_MOCK=1` 即可，前端会自动走 `/orders/{id}/mock-paid` 完成订单。
 - **真实支付**：将 `WX_PAY_MOCK=0`，并填齐上述 6 项；`WX_PAY_NOTIFY_URL` 需要在「微信支付商户平台」白名单中。
+
+## AI 测评（阿里 Qwen 多模态）
+
+后端使用 DashScope OpenAI 兼容协议接入通义千问多模态：
+
+- 文本：`qwen-plus`
+- 图片：`qwen-vl-max`
+- 语音：`qwen-audio-turbo`
+- 全模态（图+音+文）：`qwen-omni-turbo`
+
+`.env` 配置：
+
+```env
+DASHSCOPE_API_KEY=          # 阿里云百炼控制台获取
+QWEN_MOCK=0                  # 1=强制 mock；0=按 KEY 自动判断
+QWEN_TEXT_MODEL=qwen-plus
+QWEN_VL_MODEL=qwen-vl-max
+QWEN_AUDIO_MODEL=qwen-audio-turbo
+QWEN_OMNI_MODEL=qwen-omni-turbo
+```
+
+> 未配置 KEY 时会自动降级 mock，不会让前端报错。
+
+### 接口
+
+- `POST /api/ai-test/upload`：表单上传图片/音频，返回 `{path, url}`。
+- `POST /api/ai-test/chat`：多模态对话。
+  - body: `{message, image_paths[], audio_paths[], image_urls[], audio_urls[], history[]}`
+- `POST /api/ai-test/evaluate`：理论 / 讲解 / 面试 测评。
+  - body: `{test_type: "theory|lecture|interview", topic, user_answer, image_paths, audio_paths, ...}`
+  - 模型按 JSON 输出 `{score, feedback, suggestions}`，已自动解析。
+- `GET /api/ai-test/files/{name}`：访问已上传的临时文件。
+
+### 小程序合法域名
+
+由于上传与文件预览走 `wx.uploadFile` 与 `image src`，**`uploadFile 合法域名` 与 `downloadFile 合法域名` 必须包含后端 API 域名**。
+
+## 直播回放
+
+- 列表：`GET /api/live/replays?skip=0&limit=20`，按最新优先。
+- 详情：`GET /api/live/replays/{id}`。
+- 观看 +1：`POST /api/live/replays/{id}/view`，回放页打开时小程序自动调用。
+- 自动生成：当 `PUT /api/live/lives/{id}` 把直播状态改为 `ended` 且配置了 `live_url` 时，后端会自动生成一条同名"（回放）"记录。
+- 前端列表支持下拉刷新 + 触底分页 + "加载更多"按钮。

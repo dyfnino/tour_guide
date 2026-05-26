@@ -6,7 +6,7 @@
     <image class="banner" src="https://picsum.photos/600/300?random=20" mode="aspectFill"></image>
     <view class="title">导游资格证 · 模拟考试</view>
     <view class="info">
-      <text>题目数量：{{questions.length}} 题</text>
+      <text>题目数量：10 题（系统随机抽取）</text>
       <text>考试时长：60 分钟</text>
       <text>题型：单选 / 多选 / 判断</text>
     </view>
@@ -60,7 +60,7 @@
   <view class="result-page" wx:if="{{finished}}">
     <view class="score-circle">{{score}}</view>
     <text class="score-tip">{{timeoutTip ? '考试时间到' : '已交卷'}}</text>
-    <text class="score-detail">共 {{questions.length}} 题，答对 {{correct}} 题</text>
+    <text class="score-detail">共 {{total}} 题，答对 {{correct}} 题</text>
     <button class="primary-btn" bindtap="backToList">返回</button>
   </view>
 </view>

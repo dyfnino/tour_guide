@@ -65,13 +65,40 @@ async def update_live(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Live not found"
         )
-    
+
+    prev_status = db_live.status
     update_data = live.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(db_live, field, value)
-    
+
     await db.commit()
     await db.refresh(db_live)
+
+    # 直播刚结束，且配置了直播流地址时，自动生成一条回放记录
+    if prev_status != "ended" and db_live.status == "ended" and db_live.live_url:
+        rres = await db.execute(
+            select(Replay).where(Replay.live_id == db_live.id, Replay.is_active == True)
+        )
+        if not rres.scalars().first():
+            # 估算时长：start_time 到 end_time 的差，缺省 0
+            duration = 0
+            if db_live.start_time and db_live.end_time:
+                try:
+                    duration = max(0, int((db_live.end_time - db_live.start_time).total_seconds()))
+                except Exception:
+                    duration = 0
+            replay = Replay(
+                live_id=db_live.id,
+                title=db_live.title + "（回放）",
+                description=db_live.description,
+                cover_image=db_live.cover_image,
+                replay_url=db_live.live_url,
+                duration=duration,
+                views=0,
+            )
+            db.add(replay)
+            await db.commit()
+
     return db_live
 
 @router.delete("/lives/{live_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -96,10 +123,10 @@ async def delete_live(
 async def get_replays(
     live_id: int = None,
     skip: int = 0,
-    limit: int = 100,
+    limit: int = 20,
     db: AsyncSession = Depends(get_db)
 ):
-    query = select(Replay).where(Replay.is_active == True)
+    query = select(Replay).where(Replay.is_active == True).order_by(desc(Replay.id))
     if live_id:
         query = query.where(Replay.live_id == live_id)
     result = await db.execute(query.offset(skip).limit(limit))
@@ -115,6 +142,19 @@ async def get_replay(replay_id: int, db: AsyncSession = Depends(get_db)):
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Replay not found"
         )
+    return replay
+
+
+@router.post("/replays/{replay_id}/view", response_model=ReplaySchema)
+async def increment_replay_view(replay_id: int, db: AsyncSession = Depends(get_db)):
+    """回放被观看时调用，将观看次数 +1。"""
+    result = await db.execute(select(Replay).where(Replay.id == replay_id, Replay.is_active == True))
+    replay = result.scalar_one_or_none()
+    if not replay:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Replay not found")
+    replay.views = (replay.views or 0) + 1
+    await db.commit()
+    await db.refresh(replay)
     return replay
 
 @router.post("/replays", response_model=ReplaySchema, status_code=status.HTTP_201_CREATED)

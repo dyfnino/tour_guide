@@ -77,12 +77,17 @@ Page({
     }
     const cur = this.data.current;
     let correct = false;
+    // 后端 answer 字段为 JSON：单选/判断为 int，多选为 [int]；
+    // 数据库经反序列化也可能把 int 包成 [int]，此处统一兼容。
+    const ans = cur.answer;
     if (cur.type === 'multi') {
-      const ans = [...cur.answer].sort().join(',');
-      const sel = [...this.data.selected].sort().join(',');
-      correct = ans === sel;
+      const ansArr = Array.isArray(ans) ? ans : [ans];
+      const a = [...ansArr].sort().join(',');
+      const s = [...this.data.selected].sort().join(',');
+      correct = a === s;
     } else {
-      correct = this.data.selected[0] === cur.answer;
+      const ansVal = Array.isArray(ans) ? ans[0] : ans;
+      correct = this.data.selected.length === 1 && this.data.selected[0] === ansVal;
     }
     this.setData({
       submitted: true,

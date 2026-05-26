@@ -151,3 +151,41 @@
   font-size: 24rpx;
   color: #8c8c8c;
 }
+
+/* 无直播占位 */
+.live-banner.placeholder {
+  background: linear-gradient(135deg, #5b8def, #7d68f0);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.placeholder-icon {
+  font-size: 60rpx;
+  margin-bottom: 12rpx;
+}
+
+.placeholder-text {
+  font-size: 30rpx;
+  font-weight: 500;
+  margin-bottom: 6rpx;
+}
+
+.placeholder-tip {
+  font-size: 22rpx;
+  opacity: 0.85;
+}
+
+/* 空回放 */
+.empty-state {
+  text-align: center;
+  padding: 60rpx 0;
+  color: #8c8c8c;
+}
+
+.empty-text {
+  font-size: 26rpx;
+}

@@ -96,3 +96,44 @@
 3. 实现AI测评功能
 4. 优化用户体验
 5. 增加更多功能模块
+
+---
+
+## 微信小程序合法域名配置（重要）
+
+小程序在「真机/体验版」必须配置合法域名，否则 wx.request / wx.downloadFile / video / audio 都会失败。
+请在 微信公众平台 → 小程序后台 → 开发管理 → 开发设置 → 服务器域名 中配置：
+
+- **request 合法域名**：后端 API 域名（HTTPS），例如 `https://api.your-domain.com`
+- **socket 合法域名**：如使用 WebSocket
+- **uploadFile 合法域名**：如使用 wx.uploadFile
+- **downloadFile 合法域名**：视频/音频/图片的 CDN 域名，例如 `https://media.w3.org`、`https://your-cdn.com`
+
+> 开发期间在微信开发者工具的「详情 → 本地设置」中可勾选「不校验合法域名」临时绕过，但发布前必须按上述配置。
+
+### 后端 API 域名
+
+`frontend/utils/api.js` 中的 `BASE_URL` 默认指向 `http://localhost:8000/api`，部署上线时请改为 HTTPS 域名。
+
+### 媒体（视频/音频/图片）域名
+
+- 课程播放使用 `<video>`/`<audio>`，资源 URL 必须来自已配置的 downloadFile 合法域名，且支持 HTTPS。
+- 默认种子数据中的样例媒体（`media.w3.org`、`runoob.com`、`picsum.photos`）仅供本地联调，**生产环境务必替换为自有 CDN**（推荐：阿里云 OSS / 腾讯云 COS / 七牛云）。
+- 替换方式：直接修改数据库 `courses.media_url` / `courses.image` 字段，或在 `backend/app/database/init_db.py` 的 `SEED_COURSES` 中改为自有 URL 后重新初始化。
+
+## 微信支付配置
+
+后端 `backend/.env` 提供以下支付相关变量：
+
+```env
+WX_PAY_MOCK=1                # 1=模拟支付（无需证书）；0=真实微信支付
+WX_PAY_APPID=                # 小程序 AppID
+WX_PAY_MCHID=                # 商户号
+WX_PAY_V3_KEY=               # APIv3 密钥
+WX_PAY_CERT_SERIAL=          # 商户证书序列号
+WX_PAY_PRIVATE_KEY_PATH=     # 商户私钥文件路径（apiclient_key.pem）
+WX_PAY_NOTIFY_URL=           # 回调地址（必须 HTTPS 公网可达）
+```
+
+- **本地联调**：保持 `WX_PAY_MOCK=1` 即可，前端会自动走 `/orders/{id}/mock-paid` 完成订单。
+- **真实支付**：将 `WX_PAY_MOCK=0`，并填齐上述 6 项；`WX_PAY_NOTIFY_URL` 需要在「微信支付商户平台」白名单中。

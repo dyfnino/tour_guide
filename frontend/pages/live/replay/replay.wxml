@@ -2,10 +2,10 @@
   <video class="player" src="{{replay.videoUrl}}" controls="{{true}}" object-fit="contain"></video>
   <view class="info">
     <text class="name">{{replay.name}}</text>
-    <text class="meta">主讲：{{replay.lecturer}} · 时长 {{replay.duration}} · {{replay.views}}次观看</text>
+    <text class="meta">时长 {{replay.duration || '—'}} · {{replay.views}}次观看</text>
   </view>
   <view class="desc-card">
     <text class="desc-title">课程介绍</text>
-    <text class="desc-text">本视频为《{{replay.name}}》的精品回放，配套讲义请关注公众号获取。</text>
+    <text class="desc-text">{{replay.description || ('本视频为《' + replay.name + '》的精品回放，配套讲义请关注公众号获取。')}}</text>
   </view>
 </view>

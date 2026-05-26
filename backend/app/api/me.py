@@ -47,6 +47,9 @@ async def my_courses_detail(
             "image": c.image,
             "desc": c.description,
             "lecturer": (c.level or ""),
+            "category": c.category,
+            "media_type": c.media_type or "video",
+            "media_url": c.media_url or "",
             "progress": it.progress,
             "last_studied_at": it.last_studied_at,
         })

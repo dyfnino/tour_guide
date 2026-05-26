@@ -1,4 +1,4 @@
-<view class="room-container">
+<view class="room-container" wx:if="{{room}}">
   <!-- 视频播放器 -->
   <view class="video-wrap">
     <video
@@ -18,8 +18,8 @@
   </view>
 
   <!-- 弹幕/聊天 -->
-  <scroll-view class="chat" scroll-y="{{true}}">
-    <view class="msg" wx:for="{{messages}}" wx:key="id">
+  <scroll-view class="chat" scroll-y="{{true}}" scroll-into-view="msg-{{lastMsgId}}">
+    <view class="msg" wx:for="{{messages}}" wx:key="id" id="msg-{{item.id}}">
       <text class="msg-user">{{item.user}}：</text>
       <text class="msg-content">{{item.content}}</text>
     </view>

@@ -26,6 +26,11 @@ class Order(Base):
     name = Column(String(100), default="")
     phone = Column(String(20), default="")
     address = Column(Text, default="")
+    # 支付相关
+    pay_method = Column(String(20), default="")          # wechat
+    prepay_id = Column(String(64), default="")           # 微信预支付id
+    transaction_id = Column(String(64), default="")      # 微信支付单号
+    paid_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -37,9 +42,10 @@ class OrderItem(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
-    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    # 通用商品/课程 ID：商品订单指向 products.id；课程订单指向 courses.id
+    # 不在数据库层加外键，避免课程订单的课程 ID 与 products 主键冲突
+    product_id = Column(Integer, nullable=False, index=True)
     quantity = Column(Integer, nullable=False)
     price = Column(Float, nullable=False)
     
     order = relationship("Order", back_populates="items")
-    product = relationship("Product")

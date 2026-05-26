@@ -14,6 +14,8 @@ class Course(Base):
     duration = Column(Integer)  # 课时
     level = Column(String(20))  # 难度级别
     category = Column(String(50))  # 分类
+    media_type = Column(String(10), default="video")  # 媒体类型 video / audio
+    media_url = Column(String(500))  # 媒体地址
     is_free = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

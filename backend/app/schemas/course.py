@@ -11,6 +11,8 @@ class CourseBase(BaseModel):
     duration: Optional[int] = None
     level: Optional[str] = None
     category: Optional[str] = None
+    media_type: Optional[str] = "video"
+    media_url: Optional[str] = None
     is_free: bool = False
 
 class CourseCreate(CourseBase):
@@ -24,6 +26,8 @@ class CourseUpdate(BaseModel):
     duration: Optional[int] = None
     level: Optional[str] = None
     category: Optional[str] = None
+    media_type: Optional[str] = None
+    media_url: Optional[str] = None
     is_free: Optional[bool] = None
 
 class CourseInDB(CourseBase):

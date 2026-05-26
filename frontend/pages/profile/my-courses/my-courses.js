@@ -9,6 +9,11 @@ Page({
     this.loadMyCourses();
   },
 
+  onShow() {
+    // 从课程详情返回时刷新进度
+    this.loadMyCourses();
+  },
+
   async loadMyCourses() {
     try {
       const res = await myCoursesDetail();
@@ -38,6 +43,6 @@ Page({
 
   onCourseTap(e) {
     const id = e.currentTarget.dataset.id;
-    wx.navigateTo({ url: `/pages/guide-cert/course/course?id=${id}` });
+    wx.navigateTo({ url: `/pages/guide-cert/course/course?id=${id}&enrolled=1` });
   }
 });

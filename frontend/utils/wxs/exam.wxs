@@ -18,8 +18,19 @@ function letter(i) {
 // 判断是否为正确答案选项（练习页用）
 function isCorrectOption(question, i) {
   if (!question) return false;
-  if (question.type === "multi") return includes(question.answer, i);
-  return question.answer === i;
+  var ans = question.answer;
+  if (question.type === "multi") {
+    // 兼容 ans 既可能是 [0,2] 也可能是单值
+    if (ans && typeof ans === "object" && ans.length !== undefined) {
+      return includes(ans, i);
+    }
+    return ans === i;
+  }
+  // 单选 / 判断：ans 可能是 int，也可能是 [int]
+  if (ans && typeof ans === "object" && ans.length !== undefined) {
+    return ans[0] === i;
+  }
+  return ans === i;
 }
 
 module.exports = {

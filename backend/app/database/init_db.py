@@ -78,24 +78,85 @@ async def create_tables():
     print("[init_db] 表结构创建完成")
 
 
+async def migrate_schema():
+    """对已存在的表做增量列迁移（MySQL）。"""
+    info = get_db_connection_info()
+    db_name = info["db"]
+    try:
+        async with aiomysql.connect(**info) as conn:
+            async with conn.cursor() as cur:
+                async def column_exists(table: str, column: str) -> bool:
+                    await cur.execute(
+                        "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS "
+                        "WHERE TABLE_SCHEMA=%s AND TABLE_NAME=%s AND COLUMN_NAME=%s",
+                        (db_name, table, column),
+                    )
+                    row = await cur.fetchone()
+                    return bool(row and row[0])
+
+                if not await column_exists("courses", "media_type"):
+                    await cur.execute(
+                        "ALTER TABLE courses ADD COLUMN media_type VARCHAR(10) DEFAULT 'video'"
+                    )
+                    print("[migrate] courses.media_type 列已添加")
+                if not await column_exists("courses", "media_url"):
+                    await cur.execute(
+                        "ALTER TABLE courses ADD COLUMN media_url VARCHAR(500) NULL"
+                    )
+                    print("[migrate] courses.media_url 列已添加")
+
+                # orders 表 支付字段
+                for col, ddl in [
+                    ("pay_method", "ALTER TABLE orders ADD COLUMN pay_method VARCHAR(20) DEFAULT ''"),
+                    ("prepay_id", "ALTER TABLE orders ADD COLUMN prepay_id VARCHAR(64) DEFAULT ''"),
+                    ("transaction_id", "ALTER TABLE orders ADD COLUMN transaction_id VARCHAR(64) DEFAULT ''"),
+                    ("paid_at", "ALTER TABLE orders ADD COLUMN paid_at DATETIME NULL"),
+                ]:
+                    if not await column_exists("orders", col):
+                        await cur.execute(ddl)
+                        print(f"[migrate] orders.{col} 列已添加")
+
+                # 删除 order_items.product_id 对 products 的外键（课程订单需要存课程 id）
+                await cur.execute(
+                    "SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE "
+                    "WHERE TABLE_SCHEMA=%s AND TABLE_NAME='order_items' "
+                    "AND COLUMN_NAME='product_id' AND REFERENCED_TABLE_NAME IS NOT NULL",
+                    (db_name,),
+                )
+                rows = await cur.fetchall()
+                for (fk_name,) in rows or []:
+                    try:
+                        await cur.execute(f"ALTER TABLE order_items DROP FOREIGN KEY {fk_name}")
+                        print(f"[migrate] order_items 外键 {fk_name} 已删除")
+                    except Exception as e:
+                        print(f"[migrate] 删除外键 {fk_name} 失败: {e}")
+                await conn.commit()
+    except Exception as e:
+        print(f"[migrate] 迁移失败: {e}")
+
+
 # ---------- 种子数据 ----------
 
 SEED_COURSES = [
     {
         "name": "导游基础知识精讲", "category": "basic", "image": "https://picsum.photos/300/180?random=1",
         "description": "36课时 | 适合零基础", "level": "李老师", "price": 0, "duration": 36, "is_free": True,
+        "media_type": "video", "media_url": "https://media.w3.org/2010/05/sintel/trailer.mp4",
     },
     {
         "name": "导游业务能力提升", "category": "business", "image": "https://picsum.photos/300/180?random=2",
         "description": "24课时 | 进阶提升", "level": "王老师", "price": 99, "duration": 24,
+        "media_type": "video", "media_url": "https://media.w3.org/2010/05/sintel/trailer.mp4",
     },
     {
         "name": "政策法规高频考点解析", "category": "policy", "image": "https://picsum.photos/300/180?random=7",
         "description": "12课时 | 考点精讲", "level": "赵老师", "price": 69, "duration": 12,
+        "media_type": "audio", "media_url": "https://www.runoob.com/try/demo_source/horse.mp3",
     },
     {
         "name": "地方导游基础知识", "category": "local", "image": "https://picsum.photos/300/180?random=8",
         "description": "20课时 | 实操讲解", "level": "钱老师", "price": 129, "duration": 20,
+        "media_type": "video", "media_url": "https://media.w3.org/2010/05/sintel/trailer.mp4",
     },
 ]
 
@@ -173,11 +234,27 @@ async def seed_data():
         try:
             # 课程
             res = await db.execute(select(Course))
-            if not res.scalars().first():
+            existing_courses = res.scalars().all()
+            if not existing_courses:
                 for item in SEED_COURSES:
                     db.add(Course(**item))
                 await db.commit()
                 print("[seed] courses 写入完成")
+            else:
+                # 为旧数据回填媒体字段
+                changed = False
+                for c in existing_courses:
+                    if not getattr(c, "media_url", None):
+                        if (c.category or "") == "policy":
+                            c.media_type = "audio"
+                            c.media_url = "https://www.w3schools.com/html/horse.mp3"
+                        else:
+                            c.media_type = c.media_type or "video"
+                            c.media_url = "https://www.w3schools.com/html/mov_bbb.mp4"
+                        changed = True
+                if changed:
+                    await db.commit()
+                    print("[seed] courses 媒体字段回填完成")
 
             # 商品
             res = await db.execute(select(Product))
@@ -243,6 +320,7 @@ async def init_db():
     try:
         await create_database()
         await create_tables()
+        await migrate_schema()
         await seed_data()
         print("[init_db] 数据库初始化完成")
     except Exception as e:

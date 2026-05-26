@@ -1,76 +1,98 @@
-const { listQuestions } = require('../../../utils/api.js');
+const { startExam, submitExam } = require('../../../utils/api.js');
 
 Page({
   data: {
     started: false,
-    questions: [],
+    questions: [],       // 仅包含 id/type/title/options（不含答案）
     index: 0,
     current: null,
-    answers: {},
+    answers: {},         // { qid: [选项索引,...] }
     currentSelected: [],
     cardStatus: [],
     countdown: '60:00',
     finished: false,
     score: 0,
     correct: 0,
-    timeoutTip: false
+    total: 0,
+    timeoutTip: false,
+    submitting: false
   },
 
   _timer: null,
   _remain: 60 * 60,
-
-  onLoad() {
-    this.loadQuestions();
-  },
-
-  async loadQuestions() {
-    try {
-      const res = await listQuestions({ limit: 50 });
-      const questions = (res || []).map(q => ({
-        id: q.id,
-        type: q.type,
-        title: q.title,
-        options: q.options,
-        answer: q.answer,
-        analysis: q.analysis
-      }));
-      this.setData({ questions });
-    } catch (err) {
-      console.error('题库加载失败:', err);
-      wx.showToast({ title: '题库加载失败', icon: 'none' });
-    }
-  },
+  _examId: null,
+  _duration: 3600,
 
   onUnload() {
     if (this._timer) clearInterval(this._timer);
   },
 
-  startExam() {
-    const total = this.data.questions.length;
-    if (total === 0) {
-      wx.showToast({ title: '暂无题目', icon: 'none' });
+  promptLogin() {
+    wx.showModal({
+      title: '请先登录',
+      content: '登录后才能参加模拟考试',
+      confirmText: '去登录',
+      success: (res) => {
+        if (res.confirm) wx.navigateTo({ url: '/pages/login/login' });
+      }
+    });
+  },
+
+  async startExam() {
+    const token = wx.getStorageSync('token');
+    if (!token) {
+      this.promptLogin();
       return;
     }
-    this.setData({
-      started: true,
-      index: 0,
-      current: this.data.questions[0],
-      answers: {},
-      currentSelected: [],
-      cardStatus: new Array(total).fill('').map((_, i) => (i === 0 ? 'cur' : '')),
-      finished: false
-    });
-    this._remain = 60 * 60;
-    this.updateCountdown();
-    this._timer = setInterval(() => {
-      this._remain -= 1;
-      if (this._remain <= 0) {
-        clearInterval(this._timer);
-        this.submitExam(true);
+    wx.showLoading({ title: '抽题中...' });
+    try {
+      const res = await startExam({ count: 10, duration: 3600 });
+      wx.hideLoading();
+      const questions = (res.questions || []).map(q => ({
+        id: q.id,
+        type: q.type,
+        title: q.title,
+        options: q.options
+      }));
+      if (questions.length === 0) {
+        wx.showToast({ title: '暂无题目', icon: 'none' });
         return;
       }
+      this._examId = res.exam_id;
+      this._duration = res.duration || 3600;
+      this._remain = this._duration;
+
+      this.setData({
+        started: true,
+        questions,
+        index: 0,
+        current: questions[0],
+        answers: {},
+        currentSelected: [],
+        cardStatus: questions.map((_, i) => (i === 0 ? 'cur' : '')),
+        finished: false,
+        total: questions.length
+      });
+
       this.updateCountdown();
-    }, 1000);
+      this._timer = setInterval(() => {
+        this._remain -= 1;
+        if (this._remain <= 0) {
+          clearInterval(this._timer);
+          this.submitExam(true);
+          return;
+        }
+        this.updateCountdown();
+      }, 1000);
+    } catch (err) {
+      wx.hideLoading();
+      console.error('开始考试失败:', err);
+      if (err && err.statusCode === 401) {
+        this.promptLogin();
+      } else {
+        wx.showToast({ title: '开始考试失败', icon: 'none' });
+      }
+    }
   },
 
   updateCountdown() {
@@ -145,19 +167,33 @@ Page({
     });
   },
 
-  submitExam(timeout) {
+  async submitExam(timeout) {
     if (this._timer) clearInterval(this._timer);
-    let correct = 0;
-    this.data.questions.forEach(q => {
-      const sel = (this.data.answers[q.id] || []).slice().sort().join(',');
-      const ans = q.type === 'multi'
-        ? [...q.answer].sort().join(',')
-        : String(q.answer);
-      if (sel === ans) correct += 1;
-    });
-    const total = this.data.questions.length;
-    const score = Math.round((correct / total) * 100);
-    this.setData({ finished: true, score, correct, timeoutTip: !!timeout });
+    if (!this._examId || this.data.submitting) return;
+    this.setData({ submitting: true });
+    wx.showLoading({ title: '提交中...' });
+    try {
+      // 把 answers 转成 {qid: [选项索引,...]} 字符串 key
+      const payload = {};
+      Object.keys(this.data.answers).forEach(k => {
+        payload[String(k)] = this.data.answers[k] || [];
+      });
+      const res = await submitExam(this._examId, payload);
+      wx.hideLoading();
+      this.setData({
+        finished: true,
+        score: res.score || 0,
+        correct: res.correct_count || 0,
+        total: res.total || this.data.questions.length,
+        timeoutTip: !!timeout,
+        submitting: false
+      });
+    } catch (err) {
+      wx.hideLoading();
+      this.setData({ submitting: false });
+      console.error('交卷失败:', err);
+      wx.showToast({ title: '交卷失败，请重试', icon: 'none' });
+    }
   },
 
   backToList() {

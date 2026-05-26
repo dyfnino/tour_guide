@@ -1,6 +1,6 @@
 <view class="live-container">
   <!-- 直播入口 -->
-  <view class="live-entry" bindtap="onLiveTap">
+  <view class="live-entry" bindtap="onLiveTap" wx:if="{{liveRoom}}">
     <view class="live-banner">
       <image src="{{liveRoom.image}}" class="live-image" mode="aspectFill"></image>
       <view class="live-overlay">
@@ -14,23 +14,35 @@
     </view>
   </view>
 
+  <!-- 无直播占位 -->
+  <view class="live-entry no-live" wx:else>
+    <view class="live-banner placeholder">
+      <text class="placeholder-icon">📺</text>
+      <text class="placeholder-text">暂无正在直播的课程</text>
+      <text class="placeholder-tip">您可以在下方观看精彩回放</text>
+    </view>
+  </view>
+
   <!-- 回放合集 -->
   <view class="replay-section">
     <view class="replay-header">
       <text class="replay-title">回放合集</text>
       <text class="replay-more" bindtap="onReplayMoreTap">更多 <text class="arrow">›</text></text>
     </view>
-    <view class="replay-list">
+    <view class="replay-list" wx:if="{{replayList.length > 0}}">
       <view class="replay-item card-shadow" wx:for="{{replayList}}" wx:key="id" data-id="{{item.id}}" bindtap="onReplayTap">
         <image src="{{item.image}}" class="replay-image" mode="aspectFill"></image>
         <view class="replay-info">
           <text class="replay-name">{{item.name}}</text>
           <view class="replay-footer">
-            <text class="replay-lecturer">主讲：{{item.lecturer}} · {{item.duration}}</text>
+            <text class="replay-lecturer">{{item.duration}}</text>
             <text class="replay-views">{{item.views}}次观看</text>
           </view>
         </view>
       </view>
+    </view>
+    <view class="empty-state" wx:else>
+      <text class="empty-text">暂无回放</text>
     </view>
   </view>
 </view>

@@ -1,21 +1,36 @@
 const { listLives, listReplays } = require('../../utils/api.js');
 
+const PAGE_SIZE = 10;
+
 Page({
   data: {
     liveRoom: null,
-    replayList: []
+    replayList: [],
+    page: 0,
+    hasMore: true,
+    loadingMore: false
   },
 
   onLoad() {
-    this.loadData();
+    this.refresh();
   },
 
-  async loadData() {
+  onShow() {
+    // 进入页面时，如果还没数据则加载
+    if (this.data.replayList.length === 0 && this.data.liveRoom === null) {
+      this.refresh();
+    }
+  },
+
+  async refresh() {
+    this.setData({ page: 0, hasMore: true, replayList: [] });
+    await this.loadLive();
+    await this.loadMoreReplays();
+  },
+
+  async loadLive() {
     try {
-      const [livesRes, replaysRes] = await Promise.all([
-        listLives({ status: 'live' }),
-        listReplays()
-      ]);
+      const livesRes = await listLives({ status: 'live' });
       const lives = livesRes || [];
       const liveRoom = lives.length > 0 ? {
         id: lives[0].id,
@@ -25,20 +40,36 @@ Page({
         image: lives[0].cover_image,
         videoUrl: lives[0].live_url
       } : null;
+      this.setData({ liveRoom });
+    } catch (err) {
+      console.error('直播信息加载失败:', err);
+    }
+  },
 
-      const replays = (replaysRes || []).map(r => ({
+  async loadMoreReplays() {
+    if (this.data.loadingMore || !this.data.hasMore) return;
+    this.setData({ loadingMore: true });
+    try {
+      const skip = this.data.page * PAGE_SIZE;
+      const res = await listReplays({ skip, limit: PAGE_SIZE });
+      const items = (res || []).map(r => ({
         id: r.id,
         name: r.title,
         image: r.cover_image,
-        lecturer: '',
-        views: r.views,
+        views: r.views || 0,
         duration: r.duration ? this.formatDuration(r.duration) : '',
         videoUrl: r.replay_url
       }));
-
-      this.setData({ liveRoom, replayList: replays });
+      const hasMore = items.length === PAGE_SIZE;
+      this.setData({
+        replayList: [...this.data.replayList, ...items],
+        page: this.data.page + 1,
+        hasMore,
+        loadingMore: false
+      });
     } catch (err) {
-      console.error('直播数据加载失败:', err);
+      console.error('回放加载失败:', err);
+      this.setData({ loadingMore: false });
     }
   },
 
@@ -53,7 +84,11 @@ Page({
   },
 
   onPullDownRefresh() {
-    this.loadData().then(() => wx.stopPullDownRefresh());
+    this.refresh().then(() => wx.stopPullDownRefresh());
+  },
+
+  onReachBottom() {
+    this.loadMoreReplays();
   },
 
   onShareAppMessage() {
@@ -70,7 +105,7 @@ Page({
   },
 
   onReplayMoreTap() {
-    wx.showToast({ title: '已为您加载更多', icon: 'none' });
+    this.loadMoreReplays();
   },
 
   onReplayTap(e) {

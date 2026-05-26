@@ -32,7 +32,7 @@
         <view class="order-actions">
           <button wx:if="{{item.status === 'unpaid'}}" class="btn-primary" catchtap="payOrder" data-id="{{item.id}}">去支付</button>
           <button wx:if="{{item.status === 'paid' && !item.isCourse}}" class="btn-secondary" catchtap="confirmReceipt" data-id="{{item.id}}">确认收货</button>
-          <button wx:if="{{item.status === 'paid' && item.isCourse}}" class="btn-secondary" catchtap="goToStudy">开始学习</button>
+          <button wx:if="{{item.status === 'paid' && item.isCourse}}" class="btn-secondary" catchtap="goToStudy" data-course-id="{{item.firstCourseId}}">开始学习</button>
         </view>
       </view>
     </view>

@@ -5,7 +5,8 @@ Page({
     room: null,
     inputMsg: '',
     messages: [],
-    likeCount: 0
+    likeCount: 0,
+    lastMsgId: ''
   },
 
   onLoad(options) {
@@ -37,7 +38,8 @@ Page({
         user: m.nickname,
         content: m.content
       }));
-      this.setData({ messages });
+      const lastMsgId = messages.length ? messages[messages.length - 1].id : '';
+      this.setData({ messages, lastMsgId });
     } catch (err) {
       console.error('直播间加载失败:', err);
       wx.showToast({ title: '加载失败', icon: 'none' });
@@ -51,11 +53,16 @@ Page({
   async sendMsg() {
     const text = (this.data.inputMsg || '').trim();
     if (!text) return;
+    if (!this.data.room) return;
     const roomId = this.data.room.id;
 
     // 先本地追加用户消息
-    const tempMsg = { id: Date.now(), user: '我', content: text };
-    this.setData({ messages: [...this.data.messages, tempMsg], inputMsg: '' });
+    const tempMsg = { id: 'tmp-' + Date.now(), user: '我', content: text };
+    this.setData({
+      messages: [...this.data.messages, tempMsg],
+      inputMsg: '',
+      lastMsgId: tempMsg.id
+    });
 
     try {
       // 发送到服务端
@@ -64,9 +71,13 @@ Page({
       const messages = this.data.messages.map(m =>
         m.id === tempMsg.id ? { id: res.id, user: res.nickname, content: res.content } : m
       );
-      this.setData({ messages });
+      this.setData({ messages, lastMsgId: res.id });
     } catch (err) {
       console.error('发送消息失败:', err);
+      // 移除临时消息并提示
+      const messages = this.data.messages.filter(m => m.id !== tempMsg.id);
+      this.setData({ messages });
+      wx.showToast({ title: '发送失败', icon: 'none' });
     }
   },
 

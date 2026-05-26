@@ -60,4 +60,17 @@ async def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    # 默认关闭 reload，避免 admin/ 文件改动或 windows 下 reload 子进程异常
+    # 导致 8000 端口出现"半死"监听。如需开发热重载请设置环境变量 RELOAD=1
+    enable_reload = os.getenv("RELOAD", "0").strip() == "1"
+    if enable_reload:
+        uvicorn.run(
+            "main:app",
+            host="0.0.0.0",
+            port=8000,
+            reload=True,
+            reload_dirs=["app"],
+            reload_excludes=["admin/*", "uploads/*", "tests/*", "venv/*", ".venv/*"],
+        )
+    else:
+        uvicorn.run("main:app", host="0.0.0.0", port=8000)

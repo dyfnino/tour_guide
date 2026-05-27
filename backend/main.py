@@ -6,7 +6,7 @@ import os
 from dotenv import load_dotenv
 
 from app.api import api_router
-from app.database.init_db import init_db
+from app.database import init_db
 
 load_dotenv()
 

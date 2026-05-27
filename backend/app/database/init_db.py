@@ -105,8 +105,12 @@ async def migrate_schema():
                     )
                     print("[migrate] courses.media_url 列已添加")
 
-                # orders 表 支付字段
+                # orders 表：order_type + 收货信息 + 支付字段
                 for col, ddl in [
+                    ("order_type", "ALTER TABLE orders ADD COLUMN order_type VARCHAR(20) NOT NULL DEFAULT 'product'"),
+                    ("name", "ALTER TABLE orders ADD COLUMN name VARCHAR(100) DEFAULT ''"),
+                    ("phone", "ALTER TABLE orders ADD COLUMN phone VARCHAR(20) DEFAULT ''"),
+                    ("address", "ALTER TABLE orders ADD COLUMN address TEXT"),
                     ("pay_method", "ALTER TABLE orders ADD COLUMN pay_method VARCHAR(20) DEFAULT ''"),
                     ("prepay_id", "ALTER TABLE orders ADD COLUMN prepay_id VARCHAR(64) DEFAULT ''"),
                     ("transaction_id", "ALTER TABLE orders ADD COLUMN transaction_id VARCHAR(64) DEFAULT ''"),
@@ -315,7 +319,7 @@ async def seed_data():
             await db.rollback()
 
 
-async def init_db():
+async def _init_db():
     print("[init_db] 开始初始化数据库...")
     try:
         await create_database()
@@ -328,4 +332,4 @@ async def init_db():
 
 
 if __name__ == "__main__":
-    asyncio.run(init_db())
+    asyncio.run(_init_db())

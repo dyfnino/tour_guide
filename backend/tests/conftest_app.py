@@ -71,11 +71,16 @@ async def _create_all():
 def build_app():
     """构造一个用于测试的 FastAPI 实例。"""
     from fastapi import FastAPI
+    from fastapi.staticfiles import StaticFiles
     from app.api import api_router
     from app.database.session import get_db
 
     app = FastAPI(title="test-app")
     app.include_router(api_router, prefix="/api")
+    # 与生产环境保持一致：挂载 /uploads 静态文件
+    uploads_dir = BACKEND_DIR / "uploads"
+    uploads_dir.mkdir(parents=True, exist_ok=True)
+    app.mount("/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
     app.dependency_overrides[get_db] = _override_get_db
     return app
 

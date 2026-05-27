@@ -81,7 +81,7 @@ def page_dashboard():
     st.divider()
     st.subheader("系统提示")
     st.write(
-        "- 后台仅 `admin` 账号可登录（默认密码 admin123，可通过环境变量 `ADMIN_USERNAME` / `ADMIN_PASSWORD` 覆盖）。\n"
+        "- 后台仅管理员账号可登录（密码可通过环境变量 `ADMIN_USERNAME` / `ADMIN_PASSWORD` 覆盖）。\n"
         "- 后台与前端共享同一数据库，所有变更对小程序立即生效。\n"
         "- 媒体地址（音频/视频）建议放在自有 CDN（OSS/COS/七牛），且配置小程序合法域名。"
     )

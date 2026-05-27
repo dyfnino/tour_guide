@@ -13,7 +13,7 @@ def is_logged_in() -> bool:
 
 def login_form():
     st.markdown("## 🔐 后台登录")
-    st.caption("仅 admin 账号可登录（默认：admin / admin123）")
+    st.caption("仅管理员账号可登录")
     with st.form("login_form"):
         username = st.text_input("用户名", value="")
         password = st.text_input("密码", type="password", value="")

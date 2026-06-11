@@ -331,6 +331,21 @@ WX_PAY_REFUND_NOTIFY_URL=https://api.your-domain.com/api/orders/wechat/refund-no
 
 ---
 
+
+
+1. 环境变量（推荐，适合密钥/密码类）
+
+在微信云托管控制台 → 服务设置 → 环境变量中添加：
+
+WX_PAY_MOCK=0
+WX_PAY_APPID=你的真实appid
+WX_PAY_MCHID=你的商户号
+WX_PAY_APIV3_KEY=你的APIv3密钥
+WX_PAY_CERT_SERIAL_NO=证书序列号
+WX_PAY_PRIVATE_KEY_PATH=/app/certs/apiclient_key.pem
+WX_PAY_CERT_DIR=/app/certs/wx_platform
+WX_PAY_NOTIFY_URL=https://你的域名/api/orders/notify
+
 ## 许可证
 
 本项目仅供学习交流使用。

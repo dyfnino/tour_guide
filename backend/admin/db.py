@@ -52,7 +52,7 @@ from app.models import (  # noqa: E402
 )
 from app.models.question import ExamSession, UserCourse, LiveMessage  # noqa: E402
 from app.models.ai_test import TestResult  # noqa: E402
-from app.models.order import Order, OrderItem  # noqa: E402
+from app.models.order import Order, OrderItem, Refund, RefundStatus, OrderStatus  # noqa: E402
 
 
 def table_count(model) -> int:
@@ -78,4 +78,5 @@ __all__ = [
     "User", "Course", "Product", "Live", "Replay",
     "AiTest", "Question", "ExamSession", "UserCourse",
     "LiveMessage", "TestResult", "Order", "OrderItem",
+    "Refund", "RefundStatus", "OrderStatus",
 ]

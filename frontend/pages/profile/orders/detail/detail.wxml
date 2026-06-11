@@ -1,8 +1,8 @@
 <view class="order-detail-container">
   <!-- 订单状态 -->
   <view class="order-status-section">
-    <text class="status-icon {{order.status}}">{{order.status === 'unpaid' ? '💳' : (order.status === 'paid' ? '📦' : '✅')}}</text>
-    <text class="status-text">{{order.status === 'unpaid' ? '未支付' : (order.status === 'paid' ? '已支付' : '已完成')}}</text>
+    <text class="status-icon {{order.status}}">{{order.status === 'unpaid' ? '💳' : (order.status === 'paid' ? '📦' : (order.status === 'completed' ? '✅' : (order.status === 'refunding' ? '⏳' : (order.status === 'refunded' ? '↩️' : (order.status === 'cancelled' ? '🚫' : '📦')))))}}</text>
+    <text class="status-text">{{order.status === 'unpaid' ? '未支付' : (order.status === 'paid' ? '已支付' : (order.status === 'completed' ? '已完成' : (order.status === 'refunding' ? '退款中' : (order.status === 'refunded' ? '已退款' : (order.status === 'cancelled' ? '已取消' : order.status)))))}}</text>
   </view>
 
   <!-- 订单信息 -->
@@ -74,12 +74,36 @@
     </view>
   </view>
 
+  <!-- 退款记录 -->
+  <view class="refunds-section" wx:if="{{order.refunds && order.refunds.length > 0}}">
+    <view class="section-header">
+      <text class="header-icon">↩️</text>
+      <text class="header-title">退款记录</text>
+    </view>
+    <view class="refund-list">
+      <view class="refund-item" wx:for="{{order.refunds}}" wx:key="id" wx:for-item="r">
+        <view class="refund-row">
+          <text class="refund-amount">{{r.amount}}</text>
+          <text class="refund-status {{r.status}}">{{r.statusText}}</text>
+        </view>
+        <view class="refund-meta">
+          <text class="refund-no">单号：{{r.refundNo}}</text>
+          <text wx:if="{{r.reason}}" class="refund-reason">原因：{{r.reason}}</text>
+          <text class="refund-time">{{r.appliedAt}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
   <!-- 操作按钮 -->
   <view class="action-buttons">
     <button wx:if="{{order.status === 'unpaid'}}" class="btn-primary" bindtap="payOrder">去支付</button>
+    <button wx:if="{{order.status === 'unpaid'}}" class="btn-tertiary" bindtap="cancelOrder">取消订单</button>
     <button wx:if="{{order.status === 'paid' && !order.isCourse}}" class="btn-secondary" bindtap="confirmReceipt">确认收货</button>
     <button wx:if="{{order.status === 'paid' && order.isCourse}}" class="btn-secondary" bindtap="goToStudy">开始学习</button>
     <button wx:if="{{order.status === 'completed' && order.isCourse}}" class="btn-secondary" bindtap="goToStudy">继续学习</button>
+    <!-- 申请退款：已支付 / 已完成（未全额退款） -->
+    <button wx:if="{{(order.status === 'paid' || order.status === 'completed') && order.refundedAmount < (order.totalPrice * 1)}}" class="btn-tertiary" bindtap="applyRefund">申请退款</button>
     <button class="btn-tertiary" bindtap="contactService">联系客服</button>
   </view>
 </view>

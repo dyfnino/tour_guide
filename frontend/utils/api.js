@@ -102,6 +102,18 @@ const pollOrderPaid = async (orderId, times = 3, interval = 1500) => {
 const confirmReceipt = (orderId) =>
   request(`/orders/${orderId}`, { method: 'PUT', data: { status: 'completed' } });
 
+// 取消订单（仅未支付）
+const cancelOrder = (orderId) =>
+  request(`/orders/${orderId}`, { method: 'PUT', data: { status: 'cancelled' } });
+
+// 退款相关
+const applyRefund = (orderId, data = {}) =>
+  request(`/orders/${orderId}/refund`, { method: 'POST', data });
+const listOrderRefunds = (orderId) => request(`/orders/${orderId}/refunds`);
+// Mock 模式：把订单的所有进行中退款单一键置为已退款
+const mockRefundedOrder = (orderId) =>
+  request(`/orders/${orderId}/mock-refunded`, { method: 'POST' });
+
 // ---- AI 测评 ----
 const aiChat = (data) => request('/ai-test/chat', { method: 'POST', data });
 const aiEvaluate = (data) => request('/ai-test/evaluate', { method: 'POST', data });
@@ -152,5 +164,6 @@ module.exports = {
   listProducts,
   myCoursesDetail, enrollCourse, updateProgress,
   createCourseOrder, payOrder, prepayOrder, mockPaidOrder, getOrder, confirmReceipt, pollOrderPaid,
+  cancelOrder, applyRefund, listOrderRefunds, mockRefundedOrder,
   aiChat, aiEvaluate, listAiTests, uploadAiMedia,
 };

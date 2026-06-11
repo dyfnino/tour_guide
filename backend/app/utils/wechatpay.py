@@ -174,3 +174,123 @@ def query_by_out_trade_no(out_trade_no: str) -> Optional[Dict[str, Any]]:
         return json.loads(message)
     except Exception:
         return None
+
+
+def close_order(out_trade_no: str) -> bool:
+    """关闭订单（用于超时未支付场景）。"""
+    if is_mock():
+        return True
+    client = get_client()
+    try:
+        code, _ = client.close(out_trade_no=out_trade_no)
+        return code in (200, 204)
+    except Exception:
+        return False
+
+
+# ===================== 退� =====================
+
+def get_refund_notify_url() -> str:
+    """退款回调地址。优先使用 WX_PAY_REFUND_NOTIFY_URL，
+    否则把 WX_PAY_NOTIFY_URL 末段替换为 refund-notify。"""
+    url = os.getenv("WX_PAY_REFUND_NOTIFY_URL", "").strip()
+    if url:
+        return url
+    base = os.getenv("WX_PAY_NOTIFY_URL", "").strip()
+    if not base:
+        return ""
+    if base.endswith("/notify"):
+        return base[: -len("/notify")] + "/refund-notify"
+    return base.rstrip("/") + "/refund-notify"
+
+
+def refund(
+    *,
+    out_refund_no: str,
+    out_trade_no: str,
+    refund_fen: int,
+    total_fen: int,
+    reason: str = "",
+) -> Dict[str, Any]:
+    """
+    发起微信退款。
+    Mock 模式：直接返回模拟成功结果。
+    真实模式：调用 wechatpayv3 SDK，返回微信结果（已为 dict）。
+    """
+    if is_mock():
+        return {
+            "mock": True,
+            "status": "SUCCESS",
+            "refund_id": "mockrefund_" + uuid.uuid4().hex[:20],
+            "out_refund_no": out_refund_no,
+            "out_trade_no": out_trade_no,
+            "amount": {"refund": refund_fen, "total": total_fen, "currency": "CNY"},
+            "channel": "ORIGINAL",
+            "user_received_account": "支付用户零钱",
+            "funds_account": "AVAILABLE",
+        }
+
+    client = get_client()
+    notify_url = get_refund_notify_url()
+    code, message = client.refund(
+        out_refund_no=out_refund_no,
+        out_trade_no=out_trade_no,
+        amount={
+            "refund": refund_fen,
+            "total": total_fen,
+            "currency": "CNY",
+        },
+        reason=reason or "用户申请退款",
+        notify_url=notify_url or None,
+    )
+    if code != 200:
+        raise RuntimeError(f"微信退款失败: {code} {message}")
+    try:
+        data = json.loads(message)
+    except Exception:
+        raise RuntimeError(f"微信退款返回无法解析: {message}")
+    data["mock"] = False
+    return data
+
+
+def query_refund(out_refund_no: str) -> Optional[Dict[str, Any]]:
+    """主动查询退款单状态。"""
+    if is_mock():
+        return None
+    client = get_client()
+    try:
+        code, message = client.query_refund(out_refund_no=out_refund_no)
+    except AttributeError:
+        # 部分 SDK 版本方法名差异
+        code, message = client.refund_query(out_refund_no=out_refund_no)
+    if code != 200:
+        return None
+    try:
+        return json.loads(message)
+    except Exception:
+        return None
+
+
+def parse_refund_notify(headers: Dict[str, str], body: bytes) -> Optional[Dict[str, Any]]:
+    """
+    解析微信退款回调。
+    Mock 模式：直接把 body 当 JSON 返回（约定字段：out_refund_no、refund_status）。
+    真实模式：使用 SDK callback() 解密验签，仅在 refund.succeeded / refund.abnormal 等时返回 resource。
+    """
+    if is_mock():
+        try:
+            return json.loads(body.decode("utf-8"))
+        except Exception:
+            return None
+
+    client = get_client()
+    result = client.callback(headers=headers, body=body)
+    if not result:
+        return None
+    event_type = result.get("event_type", "")
+    # 微信退款回调事件类型：REFUND.SUCCESS / REFUND.ABNORMAL / REFUND.CLOSED
+    if not event_type.startswith("REFUND."):
+        return None
+    resource = result.get("resource") or {}
+    resource["__event_type"] = event_type
+    return resource

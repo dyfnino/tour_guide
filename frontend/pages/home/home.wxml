@@ -40,12 +40,6 @@
       </view>
       <text class="entry-title">导游考证</text>
     </view>
-    <view class="entry-item" bindtap="navigateToSpecialty">
-      <view class="entry-icon entry-icon-secondary">
-        <text class="icon-text">🛍️</text>
-      </view>
-      <text class="entry-title">特产商城</text>
-    </view>
     <view class="entry-item" bindtap="navigateToLive">
       <view class="entry-icon entry-icon-success">
         <text class="icon-text">📺</text>
@@ -74,36 +68,6 @@
           <view class="course-footer">
             <text class="course-price text-primary">{{item.price}}</text>
             <text class="course-students">{{item.students}}</text>
-          </view>
-        </view>
-      </view>
-    </view>
-  </view>
-
-  <!-- 热门特产 -->
-  <view class="specialty-section">
-    <view class="section-header">
-      <text class="section-title">热门特产</text>
-      <text class="section-more" bindtap="onSpecialtyMoreTap">更多 <text class="arrow">›</text></text>
-    </view>
-    <view class="specialty-list">
-      <view class="specialty-item card-shadow" bindtap="onSpecialtyTap">
-        <image src="https://picsum.photos/300/180?random=3" class="specialty-image" mode="aspectFill"></image>
-        <view class="specialty-info">
-          <text class="specialty-name">手工特色糕点礼盒</text>
-          <view class="specialty-footer">
-            <text class="specialty-price text-danger">¥88</text>
-            <text class="specialty-tag">热销</text>
-          </view>
-        </view>
-      </view>
-      <view class="specialty-item card-shadow" bindtap="onSpecialtyTap">
-        <image src="https://picsum.photos/300/180?random=4" class="specialty-image" mode="aspectFill"></image>
-        <view class="specialty-info">
-          <text class="specialty-name">地方特色文创书签</text>
-          <view class="specialty-footer">
-            <text class="specialty-price text-danger">¥39</text>
-            <text class="specialty-tag">新品</text>
           </view>
         </view>
       </view>

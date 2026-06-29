@@ -2,11 +2,11 @@
   <!-- 分类导航 -->
   <view class="category-nav">
     <scroll-view scroll-x="{{true}}" class="category-scroll">
-      <view class="category-item active" bindtap="selectCategory" data-category="all">全部</view>
-      <view class="category-item" bindtap="selectCategory" data-category="food">特色食品</view>
-      <view class="category-item" bindtap="selectCategory" data-category="cultural">文创产品</view>
-      <view class="category-item" bindtap="selectCategory" data-category="craft">手工艺品</view>
-      <view class="category-item" bindtap="selectCategory" data-category="local">地方特产</view>
+      <view class="category-item {{selectedCategory === 'all' ? 'active' : ''}}" bindtap="selectCategory" data-category="all">全部</view>
+      <view class="category-item {{selectedCategory === 'food' ? 'active' : ''}}" bindtap="selectCategory" data-category="food">特色食品</view>
+      <view class="category-item {{selectedCategory === 'cultural' ? 'active' : ''}}" bindtap="selectCategory" data-category="cultural">文创产品</view>
+      <view class="category-item {{selectedCategory === 'craft' ? 'active' : ''}}" bindtap="selectCategory" data-category="craft">手工艺品</view>
+      <view class="category-item {{selectedCategory === 'local' ? 'active' : ''}}" bindtap="selectCategory" data-category="local">地方特产</view>
     </scroll-view>
   </view>
 
@@ -24,5 +24,11 @@
         </view>
       </view>
     </view>
+  </view>
+
+  <!-- 购物车浮动按钮 -->
+  <view class="cart-float-btn" bindtap="goToCart">
+    <text class="cart-icon">🛒</text>
+    <text class="cart-badge" wx:if="{{cartCount > 0}}">{{cartCount}}</text>
   </view>
 </view>

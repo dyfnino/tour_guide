@@ -133,6 +133,7 @@
 
 .course-list {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
 }
 
@@ -141,6 +142,7 @@
   border-radius: 16rpx;
   overflow: hidden;
   background-color: #fff;
+  margin-bottom: 16rpx;
 }
 
 .course-image {

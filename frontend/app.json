@@ -15,7 +15,10 @@
     "pages/profile/orders/orders",
     "pages/profile/orders/detail/detail",
     "pages/profile/my-courses/my-courses",
-    "pages/profile/placeholder/placeholder"
+    "pages/profile/placeholder/placeholder",
+    "pages/specialty/detail/detail",
+    "pages/specialty/cart/cart",
+    "pages/specialty/confirm/confirm"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -36,10 +39,6 @@
       {
         "pagePath": "pages/guide-cert/guide-cert",
         "text": "导游考证"
-      },
-      {
-        "pagePath": "pages/specialty/specialty",
-        "text": "特产商城"
       },
       {
         "pagePath": "pages/profile/profile",

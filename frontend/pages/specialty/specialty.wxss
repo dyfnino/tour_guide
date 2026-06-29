@@ -31,7 +31,7 @@
 }
 
 .category-item.active::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 50%;
@@ -104,4 +104,39 @@
   font-size: 32rpx;
   color: #1677ff;
   font-weight: bold;
+}
+
+/* 购物车浮动按钮 */
+.cart-float-btn {
+  position: fixed;
+  right: 32rpx;
+  bottom: 120rpx;
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1677ff 0%, #0958d9 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4rpx 16rpx rgba(22, 119, 255, 0.4);
+}
+
+.cart-float-btn .cart-icon {
+  font-size: 48rpx;
+  color: #fff;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -8rpx;
+  right: -8rpx;
+  min-width: 36rpx;
+  height: 36rpx;
+  line-height: 36rpx;
+  background-color: #ff4d4f;
+  color: #fff;
+  font-size: 20rpx;
+  text-align: center;
+  border-radius: 18rpx;
+  padding: 0 8rpx;
 }

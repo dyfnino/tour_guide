@@ -1,0 +1,56 @@
+<view class="cart-container">
+  <!-- 购物车列表 -->
+  <view class="cart-list" wx:if="{{cart.length > 0}}">
+    <view class="cart-item" wx:for="{{cart}}" wx:key="id">
+      <!-- 选择框 -->
+      <view class="checkbox" bindtap="toggleSelect" data-id="{{item.id}}">
+        <view class="checkbox-inner {{selectedIds.indexOf(item.id) >= 0 ? 'checked' : ''}}"></view>
+      </view>
+      
+      <!-- 商品信息 -->
+      <image src="{{item.image}}" class="product-image" mode="aspectFill"></image>
+      <view class="product-info">
+        <text class="product-name">{{item.name}}</text>
+        <view class="product-bottom">
+          <text class="product-price">¥{{item.price}}</text>
+          <view class="quantity-control">
+            <view class="qty-btn" bindtap="decreaseQuantity" data-id="{{item.id}}">-</view>
+            <text class="qty-num">{{item.quantity}}</text>
+            <view class="qty-btn" bindtap="increaseQuantity" data-id="{{item.id}}">+</view>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 删除按钮 -->
+      <view class="delete-btn" bindtap="deleteItem" data-id="{{item.id}}">
+        <text>删除</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空购物车 -->
+  <view class="empty-cart" wx:else>
+    <text class="empty-icon">🛒</text>
+    <text class="empty-text">购物车是空的</text>
+    <view class="go-shopping" bindtap="wx.switchTab" data-url="/pages/specialty/specialty">
+      <text>去逛逛</text>
+    </view>
+  </view>
+
+  <!-- 底部结算栏 -->
+  <view class="bottom-bar" wx:if="{{cart.length > 0}}">
+    <view class="select-all" bindtap="toggleSelectAll">
+      <view class="checkbox">
+        <view class="checkbox-inner {{selectedIds.length === cart.length ? 'checked' : ''}}"></view>
+      </view>
+      <text>全选</text>
+    </view>
+    <view class="total-section">
+      <text class="total-label">合计：</text>
+      <text class="total-price">¥{{totalPrice}}</text>
+    </view>
+    <view class="checkout-btn" bindtap="goCheckout">
+      <text>结算({{selectedIds.length}})</text>
+    </view>
+  </view>
+</view>

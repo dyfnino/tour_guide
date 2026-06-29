@@ -73,8 +73,12 @@ const listProducts = (params = {}) => {
   const qs = Object.keys(params).map(k => `${k}=${encodeURIComponent(params[k])}`).join('&');
   return request('/products' + (qs ? `?${qs}` : ''));
 };
+const getProduct = (id) => request(`/products/${id}`);
 
 // ---- 订单 ----
+// 创建商品订单
+const createProductOrder = (data) =>
+  request('/orders', { method: 'POST', data });
 const createCourseOrder = (courseId) =>
   request('/orders/course', { method: 'POST', data: { course_id: courseId } });
 const payOrder = (orderId) =>
@@ -161,8 +165,9 @@ module.exports = {
   listQuestions, startExam, submitExam,
   listLives, listReplays, getReplay, listLiveMessages, sendLiveMessage,
   incrementReplayView,
-  listProducts,
+  listProducts, getProduct,
   myCoursesDetail, enrollCourse, updateProgress,
+  createProductOrder,
   createCourseOrder, payOrder, prepayOrder, mockPaidOrder, getOrder, confirmReceipt, pollOrderPaid,
   cancelOrder, applyRefund, listOrderRefunds, mockRefundedOrder,
   aiChat, aiEvaluate, listAiTests, uploadAiMedia,

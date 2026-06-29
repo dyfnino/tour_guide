@@ -1,0 +1,46 @@
+<view class="detail-container">
+  <view wx:if="{{loading}}" class="loading">加载中...</view>
+  
+  <block wx:if="{{product}}">
+    <!-- 商品图片 -->
+    <view class="product-image-wrapper">
+      <image src="{{product.image}}" class="product-image" mode="aspectFill"></image>
+    </view>
+
+    <!-- 商品信息 -->
+    <view class="product-info">
+      <view class="product-price-row">
+        <text class="product-price">¥{{product.price}}</text>
+      </view>
+      <text class="product-name">{{product.name}}</text>
+      <text class="product-category">分类：{{product.category}}</text>
+    </view>
+
+    <!-- 商品描述 -->
+    <view class="product-desc">
+      <text class="desc-title">商品描述</text>
+      <text class="desc-content">{{product.description}}</text>
+    </view>
+
+    <!-- 数量选择 -->
+    <view class="quantity-section">
+      <text class="quantity-label">购买数量</text>
+      <view class="quantity-control">
+        <view class="qty-btn {{quantity <= 1 ? 'disabled' : ''}}" bindtap="decreaseQuantity">-</view>
+        <input class="qty-input" type="number" value="{{quantity}}" bindinput="onQuantityInput" />
+        <view class="qty-btn {{quantity >= product.stock ? 'disabled' : ''}}" bindtap="increaseQuantity">+</view>
+      </view>
+    </view>
+  </block>
+
+  <!-- 底部操作栏 -->
+  <view class="bottom-bar">
+    <view class="cart-btn" bindtap="addToCart">
+      <text class="btn-icon">🛒</text>
+      <text class="btn-text">加入购物车</text>
+    </view>
+    <view class="buy-btn" bindtap="buyNow">
+      <text>立即购买</text>
+    </view>
+  </view>
+</view>

@@ -4,11 +4,23 @@ Page({
   data: {
     selectedCategory: 'all',
     allProducts: [],
-    productList: []
+    productList: [],
+    cartCount: 0
   },
 
   onLoad() {
     this.loadProducts();
+    this.updateCartCount();
+  },
+
+  onShow() {
+    this.updateCartCount();
+  },
+
+  updateCartCount() {
+    const cart = wx.getStorageSync('cart') || [];
+    const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+    this.setData({ cartCount: count });
   },
 
   async loadProducts() {
@@ -53,13 +65,44 @@ Page({
   // 产品点击事件
   onProductTap(e) {
     const productId = e.currentTarget.dataset.id;
-    console.log('Product tapped:', productId);
+    wx.navigateTo({
+      url: `/pages/specialty/detail/detail?id=${productId}`
+    });
   },
 
   // 添加到购物车
   onAddToCart(e) {
     e.stopPropagation();
     const productId = e.currentTarget.dataset.id;
-    console.log('Add to cart:', productId);
+    const product = this.data.allProducts.find(p => p.id === productId);
+    
+    if (!product) return;
+    
+    // 获取购物车
+    let cart = wx.getStorageSync('cart') || [];
+    
+    // 检查是否已在购物车
+    const existIndex = cart.findIndex(item => item.id === productId);
+    if (existIndex >= 0) {
+      cart[existIndex].quantity += 1;
+    } else {
+      cart.push({
+        id: product.id,
+        name: product.name,
+        image: product.image,
+        price: parseFloat(product.price.replace('¥', '')),
+        quantity: 1
+      });
+    }
+
+    wx.setStorageSync('cart', cart);
+    wx.showToast({ title: '已加入购物车', icon: 'success' });
+  },
+
+  // 查看购物车
+  goToCart() {
+    wx.navigateTo({
+      url: '/pages/specialty/cart/cart'
+    });
   }
 });

@@ -67,9 +67,9 @@ async def create_order(
         )
         db.add(db_order)
         await db.commit()
-        # 重新查询并预加载 items
+        # 重新查询并预加载 items 和 refunds
         res = await db.execute(
-            select(Order).options(selectinload(Order.items)).where(Order.id == db_order.id)
+            select(Order).options(selectinload(Order.items), selectinload(Order.refunds)).where(Order.id == db_order.id)
         )
         return res.scalar_one()
 
@@ -117,16 +117,16 @@ async def create_course_order(
             )
             db.add(db_order)
             await db.commit()
-            # 重新查询并预加载 items，避免序列化时触发懒加载
+            # 重新查询并预加载 items 和 refunds，避免序列化时触发懒加载
             res = await db.execute(
-                select(Order).options(selectinload(Order.items)).where(Order.id == db_order.id)
+                select(Order).options(selectinload(Order.items), selectinload(Order.refunds)).where(Order.id == db_order.id)
             )
             return res.scalar_one()
 
         # 付费课程：检查是否已有未支付的订单，避免重复下单
         existing = await db.execute(
             select(Order)
-            .options(selectinload(Order.items))
+            .options(selectinload(Order.items), selectinload(Order.refunds))
             .where(
                 Order.user_id == user.id,
                 Order.order_type == OrderType.COURSE,
@@ -156,9 +156,11 @@ async def create_course_order(
         )
         db.add(db_order)
         await db.commit()
-        # 重新查询并预加载 items，避免序列化时触发懒加载
+        # 重新查询并预加载 items 和 refunds，避免序列化时触发懒加载
         res = await db.execute(
-            select(Order).options(selectinload(Order.items)).where(Order.id == db_order.id)
+            select(Order)
+            .options(selectinload(Order.items), selectinload(Order.refunds))
+            .where(Order.id == db_order.id)
         )
         return res.scalar_one()
 
@@ -178,7 +180,7 @@ async def get_orders(
     user: User = Depends(get_current_user),
 ):
     try:
-        query = select(Order).options(selectinload(Order.items)).where(Order.user_id == user.id)
+        query = select(Order).options(selectinload(Order.items), selectinload(Order.refunds)).where(Order.user_id == user.id)
         if status:
             query = query.where(Order.status == status)
         query = query.order_by(Order.created_at.desc())
@@ -215,7 +217,7 @@ async def get_order(
 ):
     try:
         result = await db.execute(
-            select(Order).options(selectinload(Order.items)).where(Order.id == order_id, Order.user_id == user.id)
+            select(Order).options(selectinload(Order.items), selectinload(Order.refunds)).where(Order.id == order_id, Order.user_id == user.id)
         )
         order = result.scalar_one_or_none()
         if not order:
@@ -304,7 +306,7 @@ async def pay_order(
     Mock 模式：返回 mock=true 的占位参数，前端可调用确认接口模拟支付成功。
     """
     res = await db.execute(
-        select(Order).options(selectinload(Order.items)).where(
+        select(Order).options(selectinload(Order.items), selectinload(Order.refunds)).where(
             Order.id == order_id, Order.user_id == user.id
         )
     )
@@ -370,7 +372,7 @@ async def mock_paid(
     if not wechatpay.is_mock():
         raise HTTPException(status_code=403, detail="非 Mock 模式禁止调用")
     res = await db.execute(
-        select(Order).options(selectinload(Order.items)).where(
+        select(Order).options(selectinload(Order.items), selectinload(Order.refunds)).where(
             Order.id == order_id, Order.user_id == user.id
         )
     )
@@ -408,7 +410,7 @@ async def wechat_notify(request: Request, db: AsyncSession = Depends(get_db)):
         return _notify_fail(f"未支付成功: {trade_state}")
 
     res = await db.execute(
-        select(Order).options(selectinload(Order.items)).where(Order.order_no == out_trade_no)
+        select(Order).options(selectinload(Order.items), selectinload(Order.refunds)).where(Order.order_no == out_trade_no)
     )
     order = res.scalar_one_or_none()
     if not order:

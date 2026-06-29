@@ -136,4 +136,159 @@ backend/
 - 接入真实 AI 服务（DeepSeek 等）做导游词测评
 - 接入支付能力（订单已有结构）
 - WebSocket 直播间实时消息推送
-- 文件上传 / 头像 OSS
+- 文件上传 / 头像OSS
+
+---
+
+## 微信云托管部署指南
+
+### 一、前置准备
+
+在部署前需要准备以下内容：
+
+| 项目                             | 说明                                  |
+| -------------------------------- | ------------------------------------- |
+| 微信小程序 AppID                 | 微信公众平台注册                      |
+| 微信小程序 AppSecret             | 微信公众平台 → 开发管理 → 开发设置    |
+| MySQL 数据库                     | 云托管内网 MySQL 或腾讯云 CDB（推荐） |
+| 微信支付商户号                   | 微信支付商户平台申请                  |
+| 支付 APIv3 密钥                  | 商户平台 → API安全 → 设置APIv3密钥    |
+| 商户私钥文件 (apiclient_key.pem) | 商户平台 → API安全 → 申请API证书      |
+| 证书序列号                       | 下载证书后可查看                      |
+| DashScope API Key（可选）        | 阿里云百炼平台申请，用于 AI 测评      |
+| 备案域名                         | 用于微信支付回调通知                  |
+
+### 二、项目文件结构（部署相关）
+
+```
+backend/
+├── Dockerfile           # 微信云托管构建文件
+├── entrypoint.sh        # 容器启动入口（含证书注入逻辑）
+├── supervisord.conf     # 进程管理（同时运行 API + 管理后台）
+├── .dockerignore        # 构建排除列表
+├── requirements.txt     # Python 依赖
+└── ...
+```
+
+### 三、部署步骤
+
+#### 1. 开通微信云托管
+
+- 登录 [微信云托管控制台](https://cloud.weixin.qq.com/)
+- 创建环境，选择地域
+- 创建 MySQL 数据库实例（记录内网地址、端口、用户名、密码）
+
+#### 2. 创建服务
+
+- 新建服务，选择「从代码构建」
+- 代码根目录设为 `backend/`（Dockerfile 所在目录）
+- 监听端口设为 **80**
+- 如需访问管理后台，额外暴露端口 **8501**
+
+#### 3. 配置环境变量
+
+在云托管服务 → 「服务设置」→「环境变量」中添加以下配置：
+
+**必需配置：**
+
+```env
+# ---- 数据库（使用云托管内网MySQL） ----
+DATABASE_URL=mysql+aiomysql://root:admin_123@10.30.109.244:3306/guide?charset=utf8mb4
+
+# ---- 应用 ----
+DEBUG=False
+SECRET_KEY=替换为一个32位以上随机字符串e04bf86d-5238-69ba-3dbb-f7ea8a920940
+ALLOWED_ORIGINS=https://你的域名
+
+# ---- 微信小程序 ----
+WECHAT_APPID=你的小程序AppID
+WECHAT_SECRET=你的小程序AppSecret
+
+# ---- 管理后台 ----
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=设置一个强密码
+```
+
+**微信支付配置（需要支付功能时）：**
+
+```env
+WX_PAY_MOCK=0
+WX_PAY_APPID=你的小程序AppID
+WX_PAY_MCHID=你的商户号
+WX_PAY_APIV3_KEY=你的APIv3密钥
+WX_PAY_CERT_SERIAL_NO=商户证书序列号
+WX_PAY_NOTIFY_URL=https://你的域名/api/orders/notify
+
+# 私钥内容（base64编码），entrypoint.sh 会自动解码写入文件
+# 生成方法：在本地执行 base64 -w 0 certs/apiclient_key.pem 获取内容
+WX_PAY_PRIVATE_KEY_CONTENT=私钥的base64编码内容
+```
+
+> **私钥 base64 编码方法：**
+>
+> - Linux/Mac: `cat certs/apiclient_key.pem | base64 -w 0`
+> - Windows PowerShell: `[Convert]::ToBase64String([IO.File]::ReadAllBytes("certs\apiclient_key.pem"))`
+
+**AI 测评配置（可选）：**
+
+```env
+DASHSCOPE_API_KEY=你的DashScope密钥
+QWEN_MOCK=0
+```
+
+#### 4. 前端配置修改
+
+部署后需修改小程序前端的 API 地址：
+
+- `frontend/utils/api.js` 第4行：
+  ```javascript
+  const BASE_URL = "https://你的云托管域名/api";
+  ```
+- `frontend/app.js` 第23行：
+  ```javascript
+  apiBase: "https://你的云托管域名";
+  ```
+
+#### 5. 微信公众平台配置
+
+登录 [微信公众平台](https://mp.weixin.qq.com/) → 开发管理 → 开发设置：
+
+- **服务器域名 → request 合法域名**：添加 `https://你的云托管域名`
+- **服务器域名 → uploadFile 合法域名**：添加 `https://你的云托管域名`（AI测评上传用）
+- **服务器域名 → downloadFile 合法域名**：添加媒体文件 CDN 域名（如使用 OSS）
+
+### 四、管理后台访问
+
+管理后台（Streamlit）运行在容器的 8501 端口：
+
+- **方案A**：在云托管中配置自定义路径，将 `/admin` 转发到 8501 端口
+- **方案B**：额外创建一个服务专门运行管理后台（更安全，可单独配置鉴权）
+- **方案C**：通过云托管的「端口转发」功能暴露 8501 端口
+
+默认管理员账号：`admin` / `admin123`（请通过环境变量 `ADMIN_PASSWORD` 修改）
+
+### 五、数据库初始化
+
+首次部署启动时，系统会自动：
+
+1. 检测并创建 `guide` 数据库
+2. 创建所有表结构
+3. 写入种子数据（示例课程、题库、商品等）
+
+无需手动执行 SQL 迁移。
+
+### 六、注意事项
+
+1. **文件存储**：当前上传文件存储在容器本地 `/app/uploads/`，容器重建后会丢失。生产环境建议：
+   - 使用云托管的 CFS 持久化存储挂载到 `/app/uploads`
+   - 或接入腾讯云 COS 对象存储
+
+2. **域名与 HTTPS**：微信云托管自动提供 HTTPS 域名，无需手动配置证书
+
+3. **日志**：容器日志可在云托管控制台「日志管理」中查看
+
+4. **扩缩容**：建议设置最小实例 1，最大实例按需配置。注意如果扩容到多实例，uploads 本地存储会不一致，此时必须接入对象存储
+
+5. **TabBar 图标**：`frontend/app.json` 中 tabBar 未配置图标文件（iconPath/selectedIconPath），发布前需补充
+
+6. **数据库备份**：建议开启云数据库的自动备份功能

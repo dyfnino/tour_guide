@@ -97,6 +97,15 @@ Page({
       wx.hideLoading();
       const params = prepay.pay_params || {};
 
+      // Mock 模式：后端返回 mock=true，直接走模拟支付，避免用假 prepay_id 调起
+      // wx.requestPayment 导致微信报"缺少参数：total_fee"
+      if (prepay.mock) {
+        await mockPaidOrder(orderId);
+        wx.showToast({ title: '已模拟支付', icon: 'success' });
+        this.loadOrders();
+        return;
+      }
+
       // 真实调起微信支付
       await new Promise((resolve, reject) => {
         wx.requestPayment({

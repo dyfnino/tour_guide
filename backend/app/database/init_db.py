@@ -134,6 +134,78 @@ async def migrate_schema():
                         print(f"[migrate] order_items 外键 {fk_name} 已删除")
                     except Exception as e:
                         print(f"[migrate] 删除外键 {fk_name} 失败: {e}")
+
+                # 统一 ENUM 列为「小写值」，并修复历史遗留的大写存量数据。
+                # 背景：早期 SQLAlchemy 按枚举成员名(大写)写库，导致库里存了
+                # PAID/UNPAID 等大写值；加 values_callable(小写)后读取会报
+                # LookupError，写入会报 Data truncated。这里三步根治：
+                #   1) 先把列扩为「大小写都允许」的临时集合，避免 UPDATE/MODIFY 被卡
+                #  2) UPDATE 把大写数据转成小写
+                #   3) 再把列收窄为纯小写 ENUM
+                enum_specs = [
+                    (
+                        "orders", "status",
+                        ["unpaid", "paid", "completed", "refunding", "refunded", "cancelled"],
+                        "unpaid",
+                    ),
+                    (
+                        "orders", "order_type",
+                        ["product", "course"],
+                        "product",
+                    ),
+                    (
+                        "refunds", "status",
+                        ["pending", "processing", "success", "fail", "rejected", "closed"],
+                        "pending",
+                    ),
+                ]
+                async def enum_definition(table: str, column: str) -> str:
+                    """返回列的 COLUMN_TYPE（如 enum('unpaid','paid')），小写化便于比较。"""
+                    await cur.execute(
+                        "SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS "
+                        "WHERE TABLE_SCHEMA=%s AND TABLE_NAME=%s AND COLUMN_NAME=%s",
+                        (db_name, table, column),
+                    )
+                    row = await cur.fetchone()
+                    return (row[0] if row and row[0] else "").lower()
+
+                for table, col, values, default in enum_specs:
+                    if not await column_exists(table, col):
+                        continue
+                    # 幂等跳过：MySQL ENUM 大小写不敏感，若列已是纯小写枚举集合，
+                    # 无需再迁移。重复执行会因大小写重复值触发 1291 报错，这里提前跳过。
+                    current_def = await enum_definition(table, col)
+                    expected_vals = {v.lower() for v in values}
+                    current_vals = {
+                        m.strip("'").lower()
+                        for m in re.findall(r"'((?:[^']|'')*)'", current_def)
+                    }
+                    if current_def.startswith("enum(") and current_vals == expected_vals:
+                        continue
+                    try:
+                        lower_vals = values
+                        upper_vals = [v.upper() for v in values]
+                        both = ",".join(f"'{v}'" for v in lower_vals + upper_vals)
+                        # 1) 扩为大小写兼容
+                        await cur.execute(
+                            f"ALTER TABLE {table} MODIFY {col} ENUM({both}) NULL"
+                        )
+                        # 2) 大写数据转小写
+                        for lo, up in zip(lower_vals, upper_vals):
+                            await cur.execute(
+                                f"UPDATE {table} SET {col}=%s WHERE {col}=%s",
+                                (lo, up),
+                            )
+                        # 3) 收窄为纯小写
+                        lower_only = ",".join(f"'{v}'" for v in lower_vals)
+                        await cur.execute(
+                            f"ALTER TABLE {table} MODIFY {col} ENUM({lower_only}) "
+                            f"NOT NULL DEFAULT '{default}'"
+                        )
+                        print(f"[migrate] {table}.{col} ENUM 已统一为小写并转换存量数据")
+                    except Exception as e:
+                        print(f"[migrate] 处理 {table}.{col} ENUM 失败: {e}")
+
                 await conn.commit()
     except Exception as e:
         print(f"[migrate] 迁移失败: {e}")

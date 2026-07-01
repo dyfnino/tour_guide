@@ -12,8 +12,32 @@ def is_logged_in() -> bool:
 
 
 def login_form():
-    st.markdown("## 🔐 后台登录")
-    st.caption("仅管理员账号可登录")
+    # 登录页样式：隐藏侧边栏，表单居中且不铺满整页
+    st.markdown(
+        """
+        <style>
+        [data-testid="stSidebar"] { display: none; }
+        [data-testid="stAppViewContainer"] .block-container {
+            max-width: 420px;
+            margin: 0 auto;
+            padding-top: 8vh;
+        }
+        [data-testid="stForm"] {
+            border: 1px solid #e3e7ef;
+            border-radius: 12px;
+            padding: 24px 28px;
+            box-shadow: 0 6px 24px rgba(31, 42, 68, 0.08);
+        }
+        .login-title { text-align: center; }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.markdown('<h2 class="login-title">🔐 后台登录</h2>', unsafe_allow_html=True)
+    st.markdown(
+        '<p class="login-title" style="color:#8a93a6;">仅管理员账号可登录</p>',
+        unsafe_allow_html=True,
+    )
     with st.form("login_form"):
         username = st.text_input("用户名", value="")
         password = st.text_input("密码", type="password", value="")

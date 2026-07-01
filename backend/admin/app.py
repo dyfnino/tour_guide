@@ -23,6 +23,40 @@ st.set_page_config(
 
 def render_sidebar():
     with st.sidebar:
+        # 侧边栏导航样式：去掉单选圆点，选中项高亮为深色
+        st.markdown(
+            """
+            <style>
+            /* 隐藏单选前面的圆点 */
+            section[data-testid="stSidebar"] [role="radiogroup"] label > div:first-child {
+                display: none !important;
+            }
+            /* 导航项样式 */
+            section[data-testid="stSidebar"] [role="radiogroup"] label {
+                display: flex;
+                align-items: center;
+                width: 100%;
+                padding: 8px 12px;
+                margin-bottom: 4px;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: background-color 0.15s ease;
+            }
+            section[data-testid="stSidebar"] [role="radiogroup"] label:hover {
+                background-color: #eef1f7;
+            }
+            /* 选中项变深色 */
+            section[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) {
+                background-color: #1f2a44 !important;
+            }
+            section[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) * {
+                color: #ffffff !important;
+                font-weight: 600;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
         st.markdown("### 🎯 导游平台后台")
         st.caption(f"管理员：{st.session_state.get('admin_username') or ADMIN_USERNAME}")
 

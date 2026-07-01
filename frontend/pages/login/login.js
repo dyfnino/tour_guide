@@ -8,7 +8,7 @@ Page({
   onLoad() {},
 
   onShareAppMessage() {
-    return { title: '导游服务平台', path: '/pages/login/login' };
+    return { title: '经纬途礼', path: '/pages/login/login' };
   },
 
   // 微信登录

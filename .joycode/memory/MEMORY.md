@@ -1,0 +1,1 @@
+- [后端配置修改需重启进程才生效](project_backend_restart.md) — tour_guide 后端 FastAPI 通过 load_dotenv() 在启动时加载 .env；改 .env 或 py 代码后必须重启 uvicorn 进程，否则运行中的旧进程仍用旧配置/旧代码

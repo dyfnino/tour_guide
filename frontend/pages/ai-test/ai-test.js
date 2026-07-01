@@ -1,4 +1,4 @@
-const { aiChat, aiEvaluate, uploadAiMedia, listAiTests } = require('../../utils/api.js');
+const { aiChat, aiEvaluate, uploadAiMedia, listAiTests, aiChatStream, aiEvaluateStream } = require('../../utils/api.js');
 
 Page({
   data: {
@@ -16,7 +16,10 @@ Page({
     evalType: '',
     evalTopic: '',
     evalResult: null,
-    scrollTop: 0
+    evalStreaming: false,
+    evalStreamText: '',
+    scrollTop: 0,
+    scrollIntoId: ''
   },
 
   _msgId: 1,
@@ -154,9 +157,8 @@ Page({
       scrollTop: this._msgId * 1000
     });
 
-    // 调后端
-    try {
-      const payload = {
+    // 调后端（流式）
+    const payload = {
         message: text,
         image_paths: imgs.map(i => i.path),
         audio_paths: aud ? [aud.path] : [],
@@ -165,29 +167,61 @@ Page({
           .slice(-6)
           .map(m => ({ role: m.type === 'user' ? 'user' : 'assistant', content: m.content }))
       };
-      const res = await aiChat(payload);
-      const aiMsg = {
-        id: 'a-' + (++this._msgId),
-        type: 'ai',
-        content: res.text || '（无返回）',
-        modelTip: res.mock ? `模型：${res.model}（mock）` : `模型：${res.model}`
-      };
+
+      // 先插入一条空的 AI 消息，用于流式增量填充
+      const aiId = 'a-' + (++this._msgId);
+      const aiIndex = this.data.chatMessages.length;
       this.setData({
-        chatMessages: [...this.data.chatMessages, aiMsg],
-        sending: false,
+        chatMessages: [...this.data.chatMessages, {
+          id: aiId, type: 'ai', content: '', modelTip: '', streaming: true
+        }],
         scrollTop: this._msgId * 1000
       });
-    } catch (err) {
-      console.error('AI 请求失败', err);
-      this.setData({
-        sending: false,
-        chatMessages: [...this.data.chatMessages, {
-          id: 'e-' + (++this._msgId), type: 'ai',
-          content: '请求失败，请稍后再试'
-        }]
-      });
-    }
-  },
+
+      // 节流刷新，避免逐字 setData 造成闪烁
+      let acc = '';
+      let modelName = '';
+      let dirty = false;
+      const flush = () => {
+        if (!dirty) return;
+        dirty = false;
+        const patch = {};
+        patch[`chatMessages[${aiIndex}].content`] = acc;
+        patch.scrollTop = this._msgId * 1000 + acc.length;
+        this.setData(patch);
+      };
+      const timer = setInterval(flush, 120);
+
+      try {
+        await aiChatStream(payload, {
+          onEvent: (ev) => {
+            if (ev.type === 'meta') {
+              modelName = ev.model || '';
+            } else if (ev.type === 'delta') {
+              acc += ev.text || '';
+              dirty = true;
+            } else if (ev.type === 'error') {
+              acc += (acc ? '\n' : '') + (ev.text || 'AI 出错');
+              dirty = true;
+            }
+        }
+        });
+        clearInterval(timer);
+        flush();
+        const finalPatch = { sending: false };
+        finalPatch[`chatMessages[${aiIndex}].content`] = acc || '（无返回）';
+        finalPatch[`chatMessages[${aiIndex}].streaming`] = false;
+        finalPatch[`chatMessages[${aiIndex}].modelTip`] = modelName ? `模型：${modelName}` : '';
+        this.setData(finalPatch);
+      } catch (err) {
+        clearInterval(timer);
+        console.error('AI 流式请求失败', err);
+        const failPatch = { sending: false };
+        failPatch[`chatMessages[${aiIndex}].content`] = acc || '请求失败，请稍后再试';
+        failPatch[`chatMessages[${aiIndex}].streaming`] = false;
+        this.setData(failPatch);
+      }
+    },
 
   // ---- 测评 ----
   onTestTypeTap(e) {
@@ -213,7 +247,7 @@ Page({
   },
 
   exitEvalMode() {
-    this.setData({ evalMode: false, evalType: '', evalTopic: '', evalResult: null });
+    this.setData({ evalMode: false, evalType: '', evalTopic: '', evalResult: null, evalStreaming: false, evalStreamText: '' });
   },
 
   async onSubmitEvaluation() {
@@ -225,28 +259,66 @@ Page({
       wx.showToast({ title: '请提供作答内容', icon: 'none' });
       return;
     }
-    this.setData({ sending: true });
-    wx.showLoading({ title: 'AI 评测中...' });
+    this.setData({
+      sending: true,
+      evalResult: null,
+      evalStreaming: true,
+      evalStreamText: ''
+    });
+
+    const payload = {
+      test_type: this.data.evalType,
+      topic: this.data.evalTopic,
+      user_answer: text,
+      image_paths: imgs.map(i => i.path),
+      audio_paths: aud ? [aud.path] : []
+    };
+
+    let acc = '';
+    let dirty = false;
+    const flush = () => {
+      if (!dirty) return;
+      dirty = false;
+      this.setData({ evalStreamText: acc });
+    };
+    const timer = setInterval(flush, 120);
+
     try {
-      const res = await aiEvaluate({
-        test_type: this.data.evalType,
-        topic: this.data.evalTopic,
-        user_answer: text,
-        image_paths: imgs.map(i => i.path),
-        audio_paths: aud ? [aud.path] : []
+      await aiEvaluateStream(payload, {
+        onEvent: (ev) => {
+          if (ev.type === 'delta') {
+            acc += ev.text || '';
+            dirty = true;
+          } else if (ev.type === 'error') {
+            acc += (acc ? '\n' : '') + (ev.text || 'AI 出错');
+            dirty = true;
+          } else if (ev.type === 'result') {
+            this.setData({
+              evalResult: {
+                test_id: ev.test_id,
+                score: ev.score,
+                feedback: ev.feedback,
+                suggestions: ev.suggestions,
+                model: ev.model,
+                result_id: ev.result_id
+              }
+            });
+          }
+        }
       });
-      wx.hideLoading();
+      clearInterval(timer);
+      flush();
       this.setData({
-        evalResult: res,
         sending: false,
+        evalStreaming: false,
         pendingImages: [],
         pendingAudio: null,
         inputValue: ''
       });
     } catch (err) {
-      wx.hideLoading();
-      this.setData({ sending: false });
-      console.error('测评失败', err);
+      clearInterval(timer);
+      console.error('测评流式失败', err);
+      this.setData({ sending: false, evalStreaming: false });
       wx.showToast({ title: '测评失败', icon: 'none' });
     }
   },

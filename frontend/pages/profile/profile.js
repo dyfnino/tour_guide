@@ -116,10 +116,24 @@ Page({
     wx.navigateTo({ url: '/pages/profile/placeholder/placeholder?title=设置' });
   },
 
-  onCustomerServiceTap() {
-    wx.makePhoneCall({ phoneNumber: '4001234567', fail: () => {
-      wx.showToast({ title: '客服：400-123-4567', icon: 'none' });
-    }});
+  onContactResult(e) {
+    // 用户成功进入或结束客服会话时的回调
+    console.log('客服会话:', e && e.detail);
+  },
+
+  onContactError(e) {
+    // 未配置客服 / 环境不支持时的兜底：提示并允许拨打客服电话
+    console.error('客服接入失败:', e && e.detail);
+    wx.showModal({
+      title: '在线客服暂不可用',
+      content: '是否拨打客服电话 18591770860？',
+      confirmText: '拨打',
+      success: (res) => {
+        if (res.confirm) {
+          wx.makePhoneCall({ phoneNumber: '18591770860' });
+        }
+      }
+    });
   },
 
   onFAQTap() {
@@ -127,6 +141,6 @@ Page({
   },
 
   onContactUsTap() {
-    wx.showModal({ title: '联系我们', content: '客服电话：400-123-4567\n邮箱：support@guide.com', showCancel: false });
+    wx.showModal({ title: '联系我们', content: '客服电话：18591770860\n邮箱：455212665@qq.com', showCancel: false });
   }
 });

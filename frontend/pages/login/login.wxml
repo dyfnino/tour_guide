@@ -3,11 +3,11 @@
     <view class="logo-placeholder">
       <text class="logo-text">导游\n服务</text>
     </view>
-    <text class="app-name">导游服务平台</text>
+    <text class="app-name">经纬途礼</text>
   </view>
   
   <view class="login-container">
-    <text class="login-title">欢迎使用导游服务平台</text>
+    <text class="login-title">欢迎使用经纬途礼</text>
     <text class="login-desc">请使用微信登录，享受更多服务</text>
     
     <button 

@@ -18,7 +18,7 @@ function request(path, options = {}) {
       method: options.method || 'GET',
       data: options.data,
       header,
-      timeout: 10000,
+      timeout: options.timeout || 10000,
       success: (res) => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve(res.data);
@@ -119,8 +119,70 @@ const mockRefundedOrder = (orderId) =>
   request(`/orders/${orderId}/mock-refunded`, { method: 'POST' });
 
 // ---- AI 测评 ----
-const aiChat = (data) => request('/ai-test/chat', { method: 'POST', data });
-const aiEvaluate = (data) => request('/ai-test/evaluate', { method: 'POST', data });
+const aiChat = (data) => request('/ai-test/chat', { method: 'POST', data, timeout: 60000 });
+const aiEvaluate = (data) => request('/ai-test/evaluate', { method: 'POST', data, timeout: 60000 });
+
+// ---- AI 流式（SSE over chunked）----
+// 通用流式请求：解析 text/event-stream，逐事件回调 onEvent(obj)；返回 Promise
+function streamRequest(path, data, callbacks = {}) {
+  const { onEvent } = callbacks;
+  const token = wx.getStorageSync('token');
+  const header = { 'Content-Type': 'application/json' };
+  if (token && !String(token).startsWith('mock-')) {
+    header['Authorization'] = `Bearer ${token}`;
+  }
+  const ab2str = (buf) => {
+    if (typeof TextDecoder !== 'undefined') {
+      return new TextDecoder('utf-8').decode(new Uint8Array(buf));
+    }
+    let s = '';
+    const bytes = new Uint8Array(buf);
+    for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+    try { return decodeURIComponent(escape(s)); } catch (e) { return s; }
+  };
+  return new Promise((resolve, reject) => {
+    let buffer = '';
+    let finished = false;
+    const drain = () => {
+      let idx;
+      while ((idx = buffer.indexOf('\n\n')) >= 0) {
+        const frame = buffer.slice(0, idx);
+        buffer = buffer.slice(idx + 2);
+        const lines = frame.split('\n');
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith('data:')) continue;
+          const payload = trimmed.slice(5).trim();
+          if (!payload || payload === '[DONE]') continue;
+          try {
+            const obj = JSON.parse(payload);
+            if (onEvent) onEvent(obj);
+          } catch (e) { /* 忽略半包/坏帧 */ }
+        }
+      }
+    };
+    const task = wx.request({
+      url: BASE_URL + path,
+      method: 'POST',
+      data,
+      header,
+      timeout: 90000,
+      enableChunked: true,
+      responseType: 'text',
+      success: () => { finished = true; drain(); resolve(); },
+      fail: (err) => { if (!finished) reject(err); }
+    });
+    if (task && typeof task.onChunkReceived === 'function') {
+      task.onChunkReceived((res) => {
+        try { buffer += ab2str(res.data); drain(); } catch (e) { /* ignore */ }
+      });
+    } else {
+      reject({ errMsg: 'chunked-unsupported' });
+    }
+  });
+}
+const aiChatStream = (data, callbacks) => streamRequest('/ai-test/chat/stream', data, callbacks);
+const aiEvaluateStream = (data, callbacks) => streamRequest('/ai-test/evaluate/stream', data, callbacks);
 const listAiTests = () => request('/ai-test/tests');
 // 上传单个文件（图片或音频）到 /ai-test/upload，返回 {path, url}
 const uploadAiMedia = (filePath, name = 'file') => {
@@ -171,4 +233,5 @@ module.exports = {
   createCourseOrder, payOrder, prepayOrder, mockPaidOrder, getOrder, confirmReceipt, pollOrderPaid,
   cancelOrder, applyRefund, listOrderRefunds, mockRefundedOrder,
   aiChat, aiEvaluate, listAiTests, uploadAiMedia,
+  aiChatStream, aiEvaluateStream,
 };

@@ -2,13 +2,13 @@ import os
 import re
 import uuid
 import json
+import asyncio
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Request
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-
 from ..database.session import get_db
 from ..models.ai_test import AiTest, TestResult
 from ..models.user import User
@@ -206,6 +206,55 @@ async def ai_chat(
     )
 
 
+_SENTINEL = object()
+
+
+def _sse_pack(obj: dict) -> str:
+    """把事件对象打包为 SSE data 帧。"""
+    return f"data: {json.dumps(obj, ensure_ascii=False)}\n\n"
+
+
+async def _stream_generator(gen):
+    """把同步的 qwen 流式生成器转成异步 SSE 输出，避免阻塞事件循环。"""
+    loop = asyncio.get_event_loop()
+    it = iter(gen)
+    while True:
+        try:
+            event = await loop.run_in_executor(None, next, it, _SENTINEL)
+        except Exception as e:  # noqa
+            yield _sse_pack({"type": "error", "text": f"流式输出异常：{e}"})
+            break
+        if event is _SENTINEL:
+            break
+        yield _sse_pack(event)
+
+
+@router.post("/chat/stream")
+async def ai_chat_stream(
+    payload: ChatRequest,
+    user: Optional[User] = Depends(get_current_user_optional),
+):
+    history = [h.model_dump() for h in (payload.history or [])]
+    gen = qwen.chat_completion_stream(
+        user_text=payload.message,
+        system_prompt=CHAT_SYSTEM_PROMPT,
+        history=history,
+        image_urls=payload.image_urls,
+        audio_urls=payload.audio_urls,
+        image_paths=payload.image_paths,
+        audio_paths=payload.audio_paths,
+    )
+    return StreamingResponse(
+        _stream_generator(gen),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
 # ============= AI 测评（理论/讲解/面试）=============
 
 EVAL_PROMPTS = {
@@ -305,4 +354,95 @@ async def ai_evaluate(
         model=res.get("model", "unknown"),
         mock=bool(res.get("mock")),
         result_id=result_id,
+    )
+
+
+@router.post("/evaluate/stream")
+async def ai_evaluate_stream(
+    payload: EvaluationRequest,
+    db: AsyncSession = Depends(get_db),
+    user: Optional[User] = Depends(get_current_user_optional),
+):
+    test_type = (payload.test_type or "theory").lower()
+    sys_prompt = EVAL_PROMPTS.get(test_type, EVAL_PROMPTS["theory"])
+
+    user_text_parts = []
+    if payload.topic:
+        user_text_parts.append(f"题目/主题：{payload.topic}")
+    if payload.user_answer:
+        user_text_parts.append(f"考生回答：{payload.user_answer}")
+    if not user_text_parts and not (payload.image_paths or payload.image_urls or
+                                     payload.audio_paths or payload.audio_urls):
+        raise HTTPException(400, "请至少提供答题文本、图片或音频之一")
+    user_text = "\n".join(user_text_parts) if user_text_parts else "请基于上传素材进行测评。"
+
+    gen = qwen.chat_completion_stream(
+        user_text=user_text,
+        system_prompt=sys_prompt,
+        image_urls=payload.image_urls,
+        audio_urls=payload.audio_urls,
+        image_paths=payload.image_paths,
+        audio_paths=payload.audio_paths,
+        temperature=0.3,
+        max_tokens=1024,
+    )
+
+    async def event_stream():
+        loop = asyncio.get_event_loop()
+        it = iter(gen)
+        full_text = ""
+        model_name = "unknown"
+        while True:
+            event = await loop.run_in_executor(None, next, it, _SENTINEL)
+            if event is _SENTINEL:
+                break
+            etype = event.get("type")
+            if etype == "meta":
+                model_name = event.get("model", model_name)
+                yield _sse_pack(event)
+            elif etype == "delta":
+                full_text += event.get("text", "")
+                yield _sse_pack(event)
+            elif etype == "error":
+                yield _sse_pack(event)
+            elif etype == "done":
+                parsed = _parse_eval_json(full_text) or {}
+                score = int(parsed.get("score") or 0)
+                score = max(0, min(100, score))
+                feedback = parsed.get("feedback") or full_text or "（未生成评语）"
+                suggestions = parsed.get("suggestions") or ""
+                result_id = None
+                if payload.test_id and user:
+                    try:
+                        db_result = TestResult(
+                            user_id=user.id,
+                            test_id=payload.test_id,
+                            score=score,
+                            result=feedback[:2000],
+                            feedback=suggestions[:2000] if suggestions else None,
+                        )
+                        db.add(db_result)
+                        await db.commit()
+                        await db.refresh(db_result)
+                        result_id = db_result.id
+                    except Exception:
+                        await db.rollback()
+                yield _sse_pack({
+                    "type": "result",
+                    "test_id": payload.test_id,
+                    "score": score,
+                    "feedback": feedback,
+                    "suggestions": suggestions,
+                    "model": model_name,
+                    "result_id": result_id,
+                })
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
     )

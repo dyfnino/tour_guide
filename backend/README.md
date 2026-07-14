@@ -193,12 +193,12 @@ backend/
 
 ```env
 # ---- 数据库（使用云托管内网MySQL） ----
-DATABASE_URL=mysql+aiomysql://root:admin_123@10.30.109.244:3306/guide?charset=utf8mb4
+DATABASE_URL=mysql+aiomysql://root:你的数据库强密码@10.x.x.x:3306/guide?charset=utf8mb4
 
 # ---- 应用 ----
 DEBUG=False
-SECRET_KEY=替换为一个32位以上随机字符串e04bf86d-5238-69ba-3dbb-f7ea8a920940
-ALLOWED_ORIGINS=https://你的域名
+SECRET_KEY=替换为32位以上高强度随机字符串
+ALLOWED_ORIGINS=https://你的正式小程序域名,https://你的管理后台域名
 
 # ---- 微信小程序 ----
 WECHAT_APPID=你的小程序AppID
@@ -217,7 +217,9 @@ WX_PAY_APPID=你的小程序AppID
 WX_PAY_MCHID=你的商户号
 WX_PAY_APIV3_KEY=你的APIv3密钥
 WX_PAY_CERT_SERIAL_NO=商户证书序列号
-WX_PAY_NOTIFY_URL=https://你的域名/api/orders/notify
+WX_PAY_NOTIFY_URL=https://你的域名/api/orders/wechat/notify
+# 可选：若不填，后端会基于 WX_PAY_NOTIFY_URL 自动推导为 /wechat/refund-notify
+WX_PAY_REFUND_NOTIFY_URL=https://你的域名/api/orders/wechat/refund-notify
 
 # 私钥内容（base64编码），entrypoint.sh 会自动解码写入文件
 # 生成方法：在本地执行 base64 -w 0 certs/apiclient_key.pem 获取内容
@@ -292,3 +294,63 @@ QWEN_MOCK=0
 5. **TabBar 图标**：`frontend/app.json` 中 tabBar 未配置图标文件（iconPath/selectedIconPath），发布前需补充
 
 6. **数据库备份**：建议开启云数据库的自动备份功能
+
+### 七、生产上线前检查清单（详细版）
+
+建议按「发布前 1 天」和「发布当天」两阶段执行，避免遗漏。
+
+#### A. 发布前 1 天（配置与安全）
+
+1. **环境变量去敏与生产化**
+   - 禁止把真实密钥写入代码仓库，全部改为云托管环境变量。
+   - 确保 `DEBUG=False`。
+   - `SECRET_KEY` 使用 32 位以上高强随机值。
+   - `ALLOWED_ORIGINS` 仅保留正式域名白名单（逗号分隔）。
+
+2. **微信登录配置核对**
+   - 配置正确的 `WECHAT_APPID` / `WECHAT_SECRET`。
+   - 微信公众平台已添加 request / upload / download 合法域名。
+
+3. **微信支付配置核对（必须）**
+   - `WX_PAY_MOCK=0`（生产强制关闭 Mock）。
+   - 回调地址使用：
+     - 支付回调：`/api/orders/wechat/notify`
+     - 退款回调：`/api/orders/wechat/refund-notify`
+   - 商户号、APIv3 密钥、证书序列号已与商户平台一致。
+   - `WX_PAY_PRIVATE_KEY_CONTENT` 为有效 base64，并可在容器启动时解码成功。
+
+4. **数据库与存储准备**
+   - 云数据库网络已放通（仅允许业务网段访问）。
+   - 开启自动备份，确认备份周期与保留天数。
+   - `/app/uploads/` 已挂载 CFS 或迁移到 COS（避免容器重建丢数据）。
+
+5. **管理后台安全**
+   - 修改默认管理员密码（禁止 `admin123`）。
+   - 优先内网访问管理后台，或单独服务并加鉴权。
+
+#### B. 发布当天（联调与回归）
+
+1. **部署后健康检查**
+   - 服务启动日志无报错。
+   - API 首页、鉴权接口、下单接口可正常访问。
+
+2. **支付全链路回归（真机）**
+   - 微信登录 -> 下单 -> 拉起支付 -> 支付成功。
+   - 支付回调能正确落库，订单状态由未支付变为已支付。
+
+3. **退款链路回归**
+   - 发起退款后，退款回调可达并正确更新订单退款状态。
+
+4. **异常场景验证**
+   - 非法签名回调应被拒绝。
+   - 重复回调应幂等，不得重复记账。
+
+5. **发布后观察（至少 30 分钟）**
+   - 观察错误日志、支付失败率、接口耗时。
+   - 如异常升高，按预案立即回滚到上一稳定版本。
+
+#### C. 推荐回滚预案（最小集）
+
+- 保留上一版本镜像 tag，确保可一键回退。
+- 回滚时同步回退环境变量变更（若有）。
+- 回滚后立即做一次登录、下单、支付冒烟验证。

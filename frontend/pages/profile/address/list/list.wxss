@@ -1,0 +1,87 @@
+.addr-container {
+  padding: 20rpx;
+  padding-bottom: 140rpx;
+  min-height: 100vh;
+  background: #f5f5f5;
+  box-sizing: border-box;
+}
+
+.empty {
+  text-align: center;
+  color: #999;
+  padding: 120rpx 0;
+  font-size: 28rpx;
+}
+
+.addr-card {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 28rpx;
+  margin-bottom: 20rpx;
+  display: flex;
+  flex-direction: column;
+}
+
+.addr-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.addr-name {
+  font-size: 30rpx;
+  font-weight: bold;
+  margin-right: 20rpx;
+}
+
+.addr-phone {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.addr-tag {
+  margin-left: 16rpx;
+  font-size: 22rpx;
+  color: #fff;
+  background: #ff6b35;
+  border-radius: 6rpx;
+  padding: 2rpx 10rpx;
+}
+
+.addr-detail {
+  font-size: 26rpx;
+  color: #333;
+  line-height: 1.5;
+}
+
+.addr-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20rpx;
+  border-top: 1rpx solid #f0f0f0;
+  padding-top: 20rpx;
+}
+
+.act {
+  font-size: 26rpx;
+  color: #666;
+  margin-left: 36rpx;
+}
+
+.act.del {
+  color: #e64340;
+}
+
+.add-btn {
+  position: fixed;
+  left: 30rpx;
+  right: 30rpx;
+  bottom: 30rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  background: #ff6b35;
+  color: #fff;
+  border-radius: 44rpx;
+  font-size: 30rpx;
+}

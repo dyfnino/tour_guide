@@ -1,4 +1,4 @@
-const { listProducts } = require('../../utils/api.js');
+const { listProducts, getCart, addToCart } = require('../../utils/api.js');
 
 Page({
   data: {
@@ -17,10 +17,14 @@ Page({
     this.updateCartCount();
   },
 
-  updateCartCount() {
-    const cart = wx.getStorageSync('cart') || [];
-    const count = cart.reduce((sum, item) => sum + item.quantity, 0);
-    this.setData({ cartCount: count });
+  async updateCartCount() {
+    try {
+      const res = await getCart();
+      const count = res && res.total_quantity ? res.total_quantity : 0;
+      this.setData({ cartCount: count });
+    } catch (err) {
+      this.setData({ cartCount: 0 });
+    }
   },
 
   async loadProducts() {
@@ -71,32 +75,25 @@ Page({
   },
 
   // 添加到购物车
-  onAddToCart(e) {
+  async onAddToCart(e) {
     e.stopPropagation();
     const productId = e.currentTarget.dataset.id;
     const product = this.data.allProducts.find(p => p.id === productId);
-    
-    if (!product) return;
-    
-    // 获取购物车
-    let cart = wx.getStorageSync('cart') || [];
-    
-    // 检查是否已在购物车
-    const existIndex = cart.findIndex(item => item.id === productId);
-    if (existIndex >= 0) {
-      cart[existIndex].quantity += 1;
-    } else {
-      cart.push({
-        id: product.id,
-        name: product.name,
-        image: product.image,
-        price: parseFloat(product.price.replace('¥', '')),
-        quantity: 1
-      });
-    }
 
-    wx.setStorageSync('cart', cart);
-    wx.showToast({ title: '已加入购物车', icon: 'success' });
+    if (!product) return;
+
+    try {
+      const summary = await addToCart(productId, 1);
+      const count = summary && summary.total_quantity ? summary.total_quantity : this.data.cartCount + 1;
+      this.setData({ cartCount: count });
+      wx.showToast({ title: '已加入购物车', icon: 'success' });
+    } catch (err) {
+      if (err && err.statusCode === 401) {
+        wx.showToast({ title: '请先登录', icon: 'none' });
+        return;
+      }
+      wx.showToast({ title: '加入失败', icon: 'none' });
+    }
   },
 
   // 查看购物车

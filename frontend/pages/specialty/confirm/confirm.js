@@ -1,14 +1,10 @@
-const { createProductOrder, prepayOrder, mockPaidOrder, pollOrderPaid } = require('../../../../utils/api.js');
+const { createProductOrder, prepayOrder, mockPaidOrder, pollOrderPaid, listAddresses, clearCart } = require('../../../../utils/api.js');
 
 Page({
   data: {
     items: [],
     totalPrice: 0,
-    address: {
-      name: '',
-      phone: '',
-      address: ''
-    },
+    address: null,
     submitting: false
   },
 
@@ -19,6 +15,17 @@ Page({
     } else {
       // 从购物车结算
       this.loadFromCart();
+    }
+  },
+
+  onShow() {
+    // 从地址管理页返回时回填选中的地址
+    const picked = wx.getStorageSync('selectedAddress');
+    if (picked) {
+      this.setData({ address: picked });
+      wx.removeStorageSync('selectedAddress');
+    } else if (!this.data.address) {
+      this.loadDefaultAddress();
     }
   },
 
@@ -51,28 +58,34 @@ Page({
       totalPrice: total.toFixed(2)
     });
 
-    // 加载收货地址
-    const savedAddress = wx.getStorageSync('defaultAddress');
-    if (savedAddress) {
-      this.setData({ address: savedAddress });
+    // 加载默认收货地址
+    this.loadDefaultAddress();
+  },
+
+  // 从后端加载默认收货地址
+  async loadDefaultAddress() {
+    try {
+      const list = await listAddresses();
+      if (list && list.length > 0) {
+        const def = list.find(a => a.is_default) || list[0];
+        this.setData({
+          address: {
+            id: def.id,
+            name: def.name,
+            phone: def.phone,
+            address: `${def.province || ''}${def.city || ''}${def.district || ''}${def.detail || ''}`
+          }
+        });
+      }
+    } catch (err) {
+      // 未登录或无地址时忽略
     }
   },
 
-  // 选择收货地址
+  // 选择收货地址：跳转到地址管理页（选择模式）
   chooseAddress() {
-    wx.chooseAddress({
-      success: (res) => {
-        const address = {
-          name: res.userName,
-          phone: res.telNumber,
-          address: `${res.provinceName}${res.cityName}${res.countyName}${res.detailInfo}`
-        };
-        this.setData({ address });
-        wx.setStorageSync('defaultAddress', address);
-      },
-      fail: () => {
-        wx.showToast({ title: '选择地址失败', icon: 'none' });
-      }
+    wx.navigateTo({
+      url: '/pages/profile/address/list/list?mode=select'
     });
   },
 
@@ -83,7 +96,7 @@ Page({
     if (submitting) return;
     
     // 验证收货地址
-    if (!address.name || !address.phone || !address.address) {
+    if (!address || !address.name || !address.phone || !address.address) {
       wx.showToast({ title: '请填写收货地址', icon: 'none' });
       return;
     }
@@ -152,10 +165,11 @@ Page({
       wx.showToast({ title: '支付成功', icon: 'success' });
 
       // 清空购物车中已结算的商品
-      const checkoutIds = this.data.items.map(i => i.id);
-      let cart = wx.getStorageSync('cart') || [];
-      cart = cart.filter(item => !checkoutIds.includes(item.id));
-      wx.setStorageSync('cart', cart);
+      try {
+        await clearCart(true);
+      } catch (e) {
+        // 直接购买（非购物车）时后端无勾选项，忽略
+      }
       wx.removeStorageSync('checkoutItems');
 
       // 轮询订单状态

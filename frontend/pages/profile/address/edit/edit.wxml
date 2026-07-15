@@ -1,0 +1,36 @@
+<view class="edit-container">
+  <view class="form-card">
+    <view class="form-row">
+      <text class="label">收货人</text>
+      <input class="input" placeholder="姓名" value="{{form.name}}" data-field="name" bindinput="onInput" />
+    </view>
+    <view class="form-row">
+      <text class="label">手机号</text>
+      <input class="input" type="number" maxlength="11" placeholder="手机号" value="{{form.phone}}" data-field="phone" bindinput="onInput" />
+    </view>
+    <view class="form-row">
+      <text class="label">省份</text>
+      <input class="input" placeholder="省" value="{{form.province}}" data-field="province" bindinput="onInput" />
+    </view>
+    <view class="form-row">
+      <text class="label">城市</text>
+      <input class="input" placeholder="市" value="{{form.city}}" data-field="city" bindinput="onInput" />
+    </view>
+    <view class="form-row">
+      <text class="label">区县</text>
+      <input class="input" placeholder="区/县" value="{{form.district}}" data-field="district" bindinput="onInput" />
+    </view>
+    <view class="form-row">
+      <text class="label">详细地址</text>
+      <input class="input" placeholder="街道、门牌号等" value="{{form.detail}}" data-field="detail" bindinput="onInput" />
+    </view>
+    <view class="form-row">
+      <text class="label">设为默认</text>
+      <switch checked="{{form.is_default}}" bindchange="onToggleDefault" color="#ff6b35" />
+    </view>
+  </view>
+
+  <view class="save-btn {{submitting ? 'disabled' : ''}}" bindtap="onSubmit">
+    {{submitting ? '保存中...' : '保存'}}
+  </view>
+</view>

@@ -18,7 +18,9 @@
     "pages/profile/placeholder/placeholder",
     "pages/specialty/detail/detail",
     "pages/specialty/cart/cart",
-    "pages/specialty/confirm/confirm"
+    "pages/specialty/confirm/confirm",
+    "pages/profile/address/list/list",
+    "pages/profile/address/edit/edit"
   ],
   "window": {
     "backgroundTextStyle": "light",

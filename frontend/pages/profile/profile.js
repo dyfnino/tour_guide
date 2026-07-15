@@ -104,6 +104,10 @@ Page({
     wx.navigateTo({ url: '/pages/profile/orders/orders' });
   },
 
+  onAddressTap() {
+    wx.navigateTo({ url: '/pages/profile/address/list/list' });
+  },
+
   onDistributionTap() {
     wx.navigateTo({ url: '/pages/profile/placeholder/placeholder?title=分销中心' });
   },

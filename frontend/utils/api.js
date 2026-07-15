@@ -118,6 +118,26 @@ const listOrderRefunds = (orderId) => request(`/orders/${orderId}/refunds`);
 const mockRefundedOrder = (orderId) =>
   request(`/orders/${orderId}/mock-refunded`, { method: 'POST' });
 
+// ---- 收货地址簿 ----
+const listAddresses = () => request('/addresses');
+const createAddress = (data) => request('/addresses', { method: 'POST', data });
+const updateAddress = (id, data) => request(`/addresses/${id}`, { method: 'PUT', data });
+const setDefaultAddress = (id) => request(`/addresses/${id}/default`, { method: 'POST' });
+const deleteAddress = (id) => request(`/addresses/${id}`, { method: 'DELETE' });
+
+// ---- 购物车（服务端） ----
+const getCart = () => request('/cart');
+const addToCart = (productId, quantity = 1) =>
+  request('/cart', { method: 'POST', data: { product_id: productId, quantity } });
+const updateCartItem = (itemId, data) =>
+  request(`/cart/${itemId}`, { method: 'PUT', data });
+const batchSelectCart = (selected, ids) =>
+  request('/cart/select', { method: 'POST', data: { selected, ids } });
+const deleteCartItem = (itemId) =>
+  request(`/cart/${itemId}`, { method: 'DELETE' });
+const clearCart = (onlySelected = false) =>
+  request(`/cart${onlySelected ? '?only_selected=true' : ''}`, { method: 'DELETE' });
+
 // ---- AI 测评 ----
 const aiChat = (data) => request('/ai-test/chat', { method: 'POST', data, timeout: 60000 });
 const aiEvaluate = (data) => request('/ai-test/evaluate', { method: 'POST', data, timeout: 60000 });
@@ -232,6 +252,8 @@ module.exports = {
   createProductOrder,
   createCourseOrder, payOrder, prepayOrder, mockPaidOrder, getOrder, confirmReceipt, pollOrderPaid,
   cancelOrder, applyRefund, listOrderRefunds, mockRefundedOrder,
+  listAddresses, createAddress, updateAddress, setDefaultAddress, deleteAddress,
+  getCart, addToCart, updateCartItem, batchSelectCart, deleteCartItem, clearCart,
   aiChat, aiEvaluate, listAiTests, uploadAiMedia,
   aiChatStream, aiEvaluateStream,
 };

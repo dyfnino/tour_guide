@@ -1,0 +1,17 @@
+# 构建镜像时忽略的文件
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+.env
+.env.*
+*.log
+.git/
+.gitignore
+.vscode/
+.idea/
+start_admin.bat
+DEPLOY.md
+certs/

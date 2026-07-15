@@ -1,0 +1,18 @@
+# Streamlit 服务配置（云托管 / 反向代理场景）
+[server]
+# 监听端口与 Dockerfile 保持一致（云托管默认 80）
+port = 80
+address = "0.0.0.0"
+# 无浏览器托管模式
+headless = true
+# 云托管公网网关会做反向代理，关闭 CORS/XSRF 以避免表单与上传被拦截
+enableCORS = false
+enableXsrfProtection = false
+# 允许上传较大的课程视频/音频（单位 MB）
+maxUploadSize = 500
+
+[browser]
+gatherUsageStats = false
+
+[theme]
+base = "light"

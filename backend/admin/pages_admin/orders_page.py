@@ -6,7 +6,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from db import Order, OrderItem, Refund, RefundStatus, OrderStatus
+from db import Order, OrderItem, Refund, RefundStatus, OrderStatus, UserCourse
 from ._helpers import query_to_df, session_scope, show_table
 
 # 让我们能 import backend.app.utils.wechatpay
@@ -262,6 +262,19 @@ def _do_wx_refund(db, order: Order, refund: Refund):
         order.refunded_at = datetime.utcnow()
         if order.refunded_amount + 1e-6 >= float(order.total_amount):
             order.status = OrderStatus.REFUNDED
+            # 课程订单全额退款：解除用户报名，前端不再显示"已购买"
+            if str(order.order_type).split(".")[-1].lower() == "course":
+                for item in order.items:
+                    uc = (
+                        db.query(UserCourse)
+                        .filter(
+                            UserCourse.user_id == order.user_id,
+                            UserCourse.course_id == item.product_id,
+                        )
+                        .first()
+                    )
+                    if uc:
+                        db.delete(uc)
         st.success(f"退款单 #{refund.id} 已成功（Mock 即时到账）")
     else:
         refund.status = RefundStatus.PROCESSING

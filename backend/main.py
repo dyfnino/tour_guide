@@ -69,7 +69,7 @@ if __name__ == "__main__":
     # 默认关闭 reload，避免 admin/ 文件改动或 windows 下 reload 子进程异常
     # 导致 8000 端口出现"半死"监听。如需开发热重载请设置环境变量 RELOAD=1
     enable_reload = os.getenv("RELOAD", "0").strip() == "1"
-    port = int(os.getenv("PORT", "80"))
+    port = int(os.getenv("PORT", "8000"))
     if enable_reload:
         uvicorn.run(
             "main:app",

@@ -79,7 +79,7 @@
         <text class="result-label">改进建议</text>
         <text class="result-text">{{evalResult.suggestions}}</text>
       </view>
-      <text class="model-tip">{{evalResult.mock ? '模型：' + evalResult.model + '（mock）' : '模型：' + evalResult.model}}</text>
+      <text class="model-tip">模型：{{evalResult.model}}</text>
     </view>
   </view>
 
@@ -89,11 +89,11 @@
       <text class="chat-title">AI 导游助手</text>
       <text class="chat-status">在线</text>
     </view>
-    <scroll-view class="chat-container" scroll-y="{{true}}" scroll-top="{{scrollTop}}">
-      <view class="message message-{{item.type}}" wx:for="{{chatMessages}}" wx:key="id">
+    <scroll-view class="chat-container" scroll-y="{{true}}" scroll-into-view="{{scrollIntoId}}" scroll-with-animation="{{false}}" enable-flex="{{true}}">
+      <view class="message message-{{item.type}}" wx:for="{{chatMessages}}" wx:key="id" id="msg-{{item.id}}">
         <view class="message-avatar">{{item.type === 'ai' ? '🤖' : '👤'}}</view>
         <view class="message-content">
-          <text class="message-text">{{item.content}}</text>
+          <text class="message-text">{{item.content}}</text><text class="typing-cursor" wx:if="{{item.streaming}}">▍</text>
           <view class="message-images" wx:if="{{item.images && item.images.length}}">
             <image wx:for="{{item.images}}" wx:key="*this" wx:for-item="img" src="{{img}}" mode="aspectFill" class="message-image" data-url="{{img}}" bindtap="previewImage"></image>
           </view>

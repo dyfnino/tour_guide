@@ -44,10 +44,19 @@
       <text class="help-title">帮助中心</text>
     </view>
     <view class="help-content">
-      <view class="help-item" bindtap="onCustomerServiceTap">
+      <button
+        class="help-item help-item-btn"
+        open-type="contact"
+        session-from="profile"
+        show-message-card="true"
+        send-message-title="在线客服咨询"
+        send-message-path="/pages/profile/profile"
+        bindcontact="onContactResult"
+        binderror="onContactError"
+      >
         <text class="help-icon">🎧</text>
         <text class="help-name">在线客服</text>
-      </view>
+      </button>
       <view class="help-item" bindtap="onFAQTap">
         <text class="help-icon">❓</text>
         <text class="help-name">常见问题</text>

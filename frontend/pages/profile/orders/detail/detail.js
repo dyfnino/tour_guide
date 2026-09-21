@@ -121,7 +121,11 @@ Page({
       wx.hideLoading();
       const params = prepay.pay_params || {};
 
-      try {
+      // Mock 模式：直接走模拟支付，避免用假 prepay_id 调起 wx.requestPayment
+      // 导致微信报"缺少参数：total_fee"
+      if (prepay.mock) {
+        await mockPaidOrder(orderId);
+      } else {
         await new Promise((resolve, reject) => {
           wx.requestPayment({
             timeStamp: params.timeStamp,
@@ -133,13 +137,6 @@ Page({
             fail: reject
           });
         });
-      } catch (e) {
-        // Mock 模式下 wx.requestPayment 必失败：自动走模拟支付
-        if (prepay.mock) {
-          await mockPaidOrder(orderId);
-        } else {
-          throw e;
-        }
       }
 
       wx.showToast({ title: '支付成功', icon: 'success' });
@@ -279,7 +276,11 @@ Page({
       wx.hideLoading();
       const params = prepay.pay_params || {};
 
-      try {
+      // Mock 模式：直接走模拟支付，避免用假 prepay_id 调起 wx.requestPayment
+      // 导致微信报"缺少参数：total_fee"
+      if (prepay.mock) {
+        await mockPaidOrder(orderId);
+      } else {
         await new Promise((resolve, reject) => {
           wx.requestPayment({
             timeStamp: params.timeStamp,
@@ -291,13 +292,6 @@ Page({
             fail: reject
           });
         });
-      } catch (e) {
-        // Mock 模式下 wx.requestPayment 必失败：自动走模拟支付
-        if (prepay.mock) {
-          await mockPaidOrder(orderId);
-        } else {
-          throw e;
-        }
       }
 
       wx.showToast({ title: '支付成功', icon: 'success' });

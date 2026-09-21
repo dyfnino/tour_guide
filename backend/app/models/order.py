@@ -37,8 +37,16 @@ class Order(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     order_no = Column(String(32), unique=True, index=True, nullable=False)
     total_amount = Column(Float, nullable=False)
-    status = Column(SQLEnum(OrderStatus), nullable=False, default=OrderStatus.UNPAID)
-    order_type = Column(SQLEnum(OrderType), nullable=False, default=OrderType.PRODUCT)
+    status = Column(
+        SQLEnum(OrderStatus, values_callable=lambda e: [m.value for m in e]),
+        nullable=False,
+        default=OrderStatus.UNPAID,
+    )
+    order_type = Column(
+        SQLEnum(OrderType, values_callable=lambda e: [m.value for m in e]),
+        nullable=False,
+        default=OrderType.PRODUCT,
+    )
     # 收货信息（课程订单可为空）
     name = Column(String(100), default="")
     phone = Column(String(20), default="")
@@ -92,7 +100,11 @@ class Refund(Base):
     admin_remark = Column(Text, default="")
     # 退款渠道返回的资金账户
     funds_account = Column(String(32), default="")
-    status = Column(SQLEnum(RefundStatus), nullable=False, default=RefundStatus.PENDING)
+    status = Column(
+        SQLEnum(RefundStatus, values_callable=lambda e: [m.value for m in e]),
+        nullable=False,
+        default=RefundStatus.PENDING,
+    )
     # 时间
     applied_at = Column(DateTime, default=datetime.utcnow)        # 用户申请时间
     reviewed_at = Column(DateTime, nullable=True)                 # 后台处理时间

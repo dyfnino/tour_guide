@@ -129,8 +129,12 @@ Page({
 
       const params = prepay.pay_params || {};
 
-      // 尝试调用微信支付
-      try {
+      // Mock 模式：直接走模拟支付，避免用假 prepay_id 调起 wx.requestPayment
+      // 导致微信报"缺少参数：total_fee"
+      if (prepay.mock) {
+        wx.showLoading({ title: '支付中...' });
+        await mockPaidOrder(orderId);
+      } else {
         await new Promise((resolve, reject) => {
           wx.requestPayment({
             timeStamp: params.timeStamp,
@@ -142,14 +146,6 @@ Page({
             fail: reject
           });
         });
-      } catch (e) {
-        // Mock 模式下自动走模拟支付
-        if (prepay.mock) {
-          wx.showLoading({ title: '支付中...' });
-          await mockPaidOrder(orderId);
-        } else {
-          throw e;
-        }
       }
 
       wx.hideLoading();

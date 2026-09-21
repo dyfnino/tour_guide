@@ -142,6 +142,21 @@
   align-items: center;
 }
 
+/* 让 <button open-type="contact"> 视觉上与其他 help-item 一致 */
+.help-item-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  line-height: 1;
+  font-size: 24rpx;
+  color: #595959;
+}
+
+.help-item-btn::after {
+  border: none;
+}
+
 .help-icon {
   font-size: 48rpx;
   margin-bottom: 16rpx;

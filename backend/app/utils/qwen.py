@@ -11,12 +11,13 @@
   https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
 
 环境变量：
-  DASHSCOPE_API_KEY: API Key（缺失时自动 mock）
+  DASHSCOPE_API_KEY: API Key（必填，缺失时会抛出运行时错误）
   QWEN_TEXT_MODEL: 文本模型，默认 qwen-plus
   QWEN_VL_MODEL: 视觉模型，默认 qwen-vl-max
   QWEN_AUDIO_MODEL: 语音模型，默认 qwen-audio-turbo
   QWEN_OMNI_MODEL: 全模态模型，默认 qwen-omni-turbo
-  QWEN_MOCK: 1 时强制使用 mock 返回，便于本地联调
+
+注意：本模块已彻底移除 mock 模式，所有请求均走真实 Qwen 多模态服务。
 """
 import os
 import base64
@@ -30,14 +31,17 @@ DEFAULT_TIMEOUT = 60
 
 
 def _api_key() -> str:
-    return os.getenv("DASHSCOPE_API_KEY", "").strip()
+    key = os.getenv("DASHSCOPE_API_KEY", "").strip()
+    if not key:
+        raise RuntimeError(
+            "DASHSCOPE_API_KEY 未配置：请在 backend/.env 中设置阿里云 DashScope API Key。"
+        )
+    return key
 
 
 def is_mock() -> bool:
-    """是否处于 mock 模式：显式开启或 API Key 缺失。"""
-    if os.getenv("QWEN_MOCK", "0").strip() == "1":
-        return True
-    return not _api_key()
+    """已废弃：mock 模式已被彻底移除，始终返回 False。"""
+    return False
 
 
 def _model_text() -> str:
@@ -94,14 +98,13 @@ def _build_multimodal_content(
     for u in (audio_urls or []):
         parts.append({"type": "input_audio", "input_audio": {"data": u, "format": "mp3"}})
     for p in (audio_paths or []):
-        # OpenAI 兼容的 audio 入参用 data URL 方式
-        with open(p, "rb") as f:
-            b64 = base64.b64encode(f.read()).decode("utf-8")
+        # DashScope 兼容模式要求 input_audio.data 为完整 data URL（含 data:audio/...;base64, 前缀）
         fmt = "mp3"
         if p.lower().endswith(".wav"): fmt = "wav"
         elif p.lower().endswith(".m4a"): fmt = "m4a"
         elif p.lower().endswith(".aac"): fmt = "aac"
-        parts.append({"type": "input_audio", "input_audio": {"data": b64, "format": fmt}})
+        data_url = _file_to_data_url(p, _guess_mime(p))
+        parts.append({"type": "input_audio", "input_audio": {"data": data_url, "format": fmt}})
     if text:
         parts.append({"type": "text", "text": text})
     return parts
@@ -132,12 +135,10 @@ def chat_completion(
     max_tokens: int = 1024,
 ) -> Dict[str, Any]:
     """
-    统一调用入口。返回：
-        {"text": str, "model": str, "mock": bool, "usage": dict|None, "raw": dict|None}
+    统一调用入口。始终走真实 Qwen 多模态服务，返回：
+        {"text": str, "model": str, "mock": False, "usage": dict|None, "raw": dict|None}
+    调用失败会返回 error=True 的错误对象，但不会再降级为 mock 内容。
     """
-    if is_mock():
-        return _mock_reply(user_text, image_paths, image_urls, audio_paths, audio_urls)
-
     chosen_model = model or _choose_model(image_paths, image_urls, audio_paths, audio_urls)
 
     messages: List[Dict[str, Any]] = []
@@ -162,8 +163,37 @@ def chat_completion(
         "max_tokens": max_tokens,
     }
 
+    # qwen-omni 系列在兼容模式下仅支持流式；此处若命中 Omni，则内部改走流式聚合
+    if "omni" in chosen_model:
+        acc, usage, model_used = "", None, chosen_model
+        for ev in chat_completion_stream(
+            user_text=user_text, system_prompt=system_prompt, history=history,
+            image_paths=image_paths, image_urls=image_urls,
+            audio_paths=audio_paths, audio_urls=audio_urls,
+            model=chosen_model, temperature=temperature, max_tokens=max_tokens,
+        ):
+            t = ev.get("type")
+            if t == "delta":
+                acc += ev.get("text", "")
+            elif t == "done":
+                usage = ev.get("usage")
+            elif t == "error":
+                return {"text": ev.get("text", "AI 出错"), "model": model_used,
+                        "mock": False, "usage": None, "raw": None, "error": True}
+        return {"text": acc or "（模型未返回内容）", "model": model_used,
+                "mock": False, "usage": usage, "raw": None}
+
+    try:
+        api_key = _api_key()
+    except RuntimeError as e:
+        return {
+            "text": f"AI 服务未配置：{e}",
+            "model": chosen_model, "mock": False, "usage": None, "raw": None,
+            "error": True,
+        }
+
     headers = {
-        "Authorization": f"Bearer {_api_key()}",
+        "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
     }
 
@@ -210,22 +240,108 @@ def chat_completion(
         }
 
 
-def _mock_reply(user_text, image_paths, image_urls, audio_paths, audio_urls) -> Dict[str, Any]:
-    parts = []
-    if user_text: parts.append(f"我理解到你的问题是：{user_text}")
-    if image_paths or image_urls:
-        n = len(image_paths or []) + len(image_urls or [])
-        parts.append(f"已收到 {n} 张图片，模拟视觉分析：图中应为风景照（mock）。")
-    if audio_paths or audio_urls:
-        n = len(audio_paths or []) + len(audio_urls or [])
-        parts.append(f"已收到 {n} 段音频，模拟语音识别：内容大致是导游词讲解（mock）。")
+def chat_completion_stream(
+    user_text: Optional[str],
+    system_prompt: Optional[str] = None,
+    history: Optional[List[Dict[str, str]]] = None,
+    image_paths: Optional[List[str]] = None,
+    image_urls: Optional[List[str]] = None,
+    audio_paths: Optional[List[str]] = None,
+    audio_urls: Optional[List[str]] = None,
+    model: Optional[str] = None,
+    temperature: float = 0.7,
+    max_tokens: int = 1024,
+):
+    """
+    流式调用生成器。逐块 yield 事件字典：
+        {"type": "meta",  "model": str}                 # 首个事件，告知模型名
+        {"type": "delta", "text": str}                  # 文本增量
+        {"type": "done",  "usage": dict|None}           # 结束
+        {"type": "error", "text": str}                  # 出错
+    基于 DashScope OpenAI 兼容协议 stream=True（SSE）。
+    """
+    chosen_model = model or _choose_model(image_paths, image_urls, audio_paths, audio_urls)
+
+    messages: List[Dict[str, Any]] = []
+    if system_prompt:
+        messages.append({"role": "system", "content": system_prompt})
+    if history:
+        for h in history:
+            role = h.get("role")
+            content = h.get("content")
+            if role and content:
+                messages.append({"role": role, "content": content})
+    parts = _build_multimodal_content(user_text, image_paths, image_urls, audio_paths, audio_urls)
     if not parts:
-        parts.append("（mock）你好，我是导游 AI 助手，请问有什么可以帮你？")
-    parts.append("\n\n💡 提示：当前为 Mock 模式，配置 DASHSCOPE_API_KEY 后将切换为真实 Qwen 多模态模型。")
-    return {
-        "text": "\n".join(parts),
-        "model": "mock-qwen",
-        "mock": True,
-        "usage": None,
-        "raw": None,
+        parts = [{"type": "text", "text": user_text or ""}]
+    messages.append({"role": "user", "content": parts})
+
+    payload: Dict[str, Any] = {
+        "model": chosen_model,
+        "messages": messages,
+        "temperature": temperature,
+        "max_tokens": max_tokens,
+        "stream": True,
+        "stream_options": {"include_usage": True},
     }
+    # qwen-omni 系列（兼容模式）要求指定输出模态，且只能流式
+    if "omni" in chosen_model:
+        payload["modalities"] = ["text"]
+
+    try:
+        api_key = _api_key()
+    except RuntimeError as e:
+        yield {"type": "error", "text": f"AI 服务未配置：{e}", "model": chosen_model}
+        return
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+
+    yield {"type": "meta", "model": chosen_model}
+
+    try:
+        with requests.post(
+            f"{DASHSCOPE_BASE_URL}/chat/completions",
+            headers=headers,
+            data=json.dumps(payload),
+            timeout=DEFAULT_TIMEOUT,
+            stream=True,
+        ) as r:
+            r.raise_for_status()
+            usage = None
+            for raw_line in r.iter_lines(decode_unicode=True):
+                if not raw_line:
+                    continue
+                line = raw_line.strip()
+                if not line.startswith("data:"):
+                    continue
+                data_str = line[len("data:"):].strip()
+                if data_str == "[DONE]":
+                    break
+                try:
+                    chunk = json.loads(data_str)
+                except Exception:
+                    continue
+                if chunk.get("usage"):
+                    usage = chunk["usage"]
+                choices = chunk.get("choices") or []
+                if not choices:
+                    continue
+                delta = choices[0].get("delta") or {}
+                piece = delta.get("content")
+                if isinstance(piece, list):
+                    piece = "".join(
+                        (p.get("text") or "") for p in piece if isinstance(p, dict)
+                    )
+                if piece:
+                    yield {"type": "delta", "text": piece}
+            yield {"type": "done", "usage": usage, "model": chosen_model}
+    except requests.HTTPError as e:
+        body = ""
+        try: body = e.response.text
+        except Exception: pass
+        yield {"type": "error", "text": f"AI 服务调用失败：{e}（{body[:200]}）", "model": chosen_model}
+    except Exception as e:
+        yield {"type": "error", "text": f"AI 服务调用异常：{e}", "model": chosen_model}

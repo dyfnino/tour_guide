@@ -105,6 +105,7 @@ async def wechat_login(payload: WechatProfile, db: AsyncSession = Depends(get_db
 
     if WECHAT_APPID and WECHAT_SECRET:
         try:
+            print(f"[debug] appid={WECHAT_APPID}, code={payload.code}, code_len={len(payload.code)}")
             resp = requests.get(
                 WECHAT_LOGIN_URL,
                 params={
@@ -116,7 +117,7 @@ async def wechat_login(payload: WechatProfile, db: AsyncSession = Depends(get_db
                 timeout=8,
             )
             data = resp.json()
-            print("用户登录返回:{}",data)
+            print(f"用户登录返回:{data}")
             if data.get("errcode"):
                 raise HTTPException(status_code=401, detail=f"微信登录失败: {data.get('errmsg')}")
             openid = data.get("openid")
@@ -135,6 +136,7 @@ async def wechat_login(payload: WechatProfile, db: AsyncSession = Depends(get_db
 
     res = await db.execute(select(User).where(User.openid == openid))
     user = res.scalar_one_or_none()
+    print(f"用户信息:{user}")
     if not user:
         user = User(
             username=f"wx_{openid[:10]}",
@@ -149,6 +151,7 @@ async def wechat_login(payload: WechatProfile, db: AsyncSession = Depends(get_db
         await db.refresh(user)
     else:
         # 同步最新昵称头像
+        print(f"用户头像信息:{payload.avatarUrl}")
         if payload.nickName:
             user.nickname = payload.nickName
         if payload.avatarUrl:

@@ -13,6 +13,7 @@ Page({
 
   // 微信登录
   wechatLogin() {
+    console.log("微信登录:"+this.data.loading.avatarUrl)
     if (this.data.loading) return;
     this.setData({ loading: true });
 
@@ -21,10 +22,12 @@ Page({
       desc: '用于完善会员资料',
       success: (profileRes) => {
         const userInfo = profileRes.userInfo;
+        console.log('头像:', userInfo.avatarUrl)
         // 再获取微信登录 code
         wx.login({
           success: (loginRes) => {
             if (loginRes.code) {
+              console.log("用户信息:",userInfo.nickName,userInfo.avatarUrl)
               this.doLogin(loginRes.code, userInfo);
             } else {
               wx.showToast({ title: '微信登录失败', icon: 'none' });

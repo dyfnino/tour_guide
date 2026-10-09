@@ -1,7 +1,7 @@
 <view class="container">
   <view class="logo-container">
     <view class="logo-placeholder">
-      <text class="logo-text">导游\n服务</text>
+      <text class="logo-text">经纬\n途礼</text>
     </view>
     <text class="app-name">经纬途礼</text>
   </view>

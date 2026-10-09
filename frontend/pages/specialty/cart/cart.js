@@ -1,6 +1,6 @@
 const {
   getCart, updateCartItem, deleteCartItem, batchSelectCart
-} = require('../../../../utils/api.js');
+} = require('../../../utils/api.js');
 
 Page({
   data: {

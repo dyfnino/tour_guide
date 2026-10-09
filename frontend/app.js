@@ -20,6 +20,6 @@ App({
   globalData: {
     userInfo: null,
     token: null,
-    apiBase: 'http://localhost:8000'
+    apiBase: 'https://django-pb2g-321426-9-1442307866.sh.run.tcloudbase.com'
   }
 });

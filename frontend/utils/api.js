@@ -1,7 +1,7 @@
 // 后端 API 调用封装
 // 使用方式：const { listCourses } = require('../../utils/api.js');
 
-const BASE_URL = 'http://localhost:8000/api';
+const BASE_URL = 'https://django-pb2g-321426-9-1442307866.sh.run.tcloudbase.com/api';
 
 function request(path, options = {}) {
   const token = wx.getStorageSync('token');

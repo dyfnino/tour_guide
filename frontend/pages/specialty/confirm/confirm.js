@@ -1,4 +1,4 @@
-const { createProductOrder, prepayOrder, mockPaidOrder, pollOrderPaid, listAddresses, clearCart } = require('../../../../utils/api.js');
+const { createProductOrder, prepayOrder, mockPaidOrder, pollOrderPaid, listAddresses, clearCart } = require('../../../utils/api.js');
 
 Page({
   data: {

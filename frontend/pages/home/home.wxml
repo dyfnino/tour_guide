@@ -2,7 +2,7 @@
   <!-- 顶部导航 -->
   <view class="header">
     <view class="header-content">
-      <text class="header-title">导游服务平台</text>
+      <text class="header-title">经纬途礼服务平台</text>
     </view>
   </view>
 

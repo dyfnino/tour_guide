@@ -23,11 +23,11 @@ Page({
       success: (profileRes) => {
         const userInfo = profileRes.userInfo;
         console.log('头像:', userInfo.avatarUrl)
+        console.log('头像:', userInfo.nickName)
         // 再获取微信登录 code
         wx.login({
           success: (loginRes) => {
             if (loginRes.code) {
-              console.log("用户信息:",userInfo.nickName,userInfo.avatarUrl)
               this.doLogin(loginRes.code, userInfo);
             } else {
               wx.showToast({ title: '微信登录失败', icon: 'none' });
@@ -50,6 +50,7 @@ Page({
   async doLogin(code, userInfo) {
     try {
       const res = await wechatLogin(code);
+      console.log("信息:",res)
       // 登录成功，存储 token 和用户信息
       wx.setStorageSync('token', res.access_token);
       const userData = {

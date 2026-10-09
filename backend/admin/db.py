@@ -26,7 +26,7 @@ def _build_sync_url() -> str:
     """把 FastAPI 用的 mysql+aiomysql URL 转成同步 mysql+pymysql。"""
     raw = os.getenv(
         "DATABASE_URL",
-        "mysql+aiomysql://root:123456@localhost:3306/guide?charset=utf8mb4",
+        "mysql+aiomysql://root:123456@10.17.104.155:3306/guide?charset=utf8mb4",
     )
     if "+aiomysql" in raw:
         raw = raw.replace("+aiomysql", "+pymysql")

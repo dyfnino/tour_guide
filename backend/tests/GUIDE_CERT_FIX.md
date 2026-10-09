@@ -55,7 +55,7 @@ python tests/diag_guide_cert.py
 ## 之后如何启动后端（推荐流程）
 
 ```bash
-# 1. 确保 MySQL 已启动（本项目读取 backend/.env 中的 DATABASE_URL，默认 root:123456@localhost:3306/guide）
+# 1. 确保 MySQL 已启动（本项目读取 backend/.env 中的 DATABASE_URL，默认 root:123456@10.17.104.155:3306/guide）
 # 2. 启动后端
 cd backend
 python main.py

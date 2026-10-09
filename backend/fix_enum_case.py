@@ -9,7 +9,7 @@ import pymysql
 from urllib.parse import urlparse, unquote
 
 # 读取 .env 里的 DATABASE_URL
-raw = "mysql+aiomysql://root:123456@localhost:3306/guide?charset=utf8mb4"
+raw = "mysql+aiomysql://root:123456@10.17.104.155:3306/guide?charset=utf8mb4"
 env_path = os.path.join(os.path.dirname(__file__), ".env")
 if os.path.exists(env_path):
     with open(env_path, "r", encoding="utf-8") as f:

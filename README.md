@@ -103,7 +103,7 @@ tour_guide/
 | ------ | ----------------------------------------------------------------- |
 | 小程序 | 微信小程序原生框架（WXML / WXSS / JS）                            |
 | 后端   | Python 3.10+、FastAPI 0.104、SQLAlchemy 2、aiomysql、Pydantic v2  |
-| 数据库 | MySQL 5.7+（默认 `localhost:3306/guide`，utf8mb4，使用 JSON 列）  |
+| 数据库 | MySQL 5.7+（默认 `10.17.104.155:3306/guide`，utf8mb4，使用 JSON 列）  |
 | 鉴权   | JWT（python-jose）+ bcrypt                                        |
 | 支付   | 微信支付 V3（wechatpayv3 1.3.7），支持 mock 模式                  |
 | AI     | 阿里云 DashScope（Qwen Plus / VL-Max / Audio-Turbo / Omni-Turbo） |
@@ -116,7 +116,7 @@ tour_guide/
 ### 1. 准备环境
 
 - Python 3.10+
-- MySQL 5.7+（已启动在 `localhost:3306`，root 用户具备建库权限）
+- MySQL 5.7+（已启动在 `10.17.104.155:3306`，root 用户具备建库权限）
 - 微信开发者工具（最新版）
 
 ### 2. 启动后端
@@ -170,7 +170,7 @@ streamlit run admin/app.py
 
 ```env
 # 数据库
-DATABASE_URL=mysql+aiomysql://root:@localhost:3306/guide?charset=utf8mb4
+DATABASE_URL=mysql+aiomysql://root:@10.17.104.155:3306/guide?charset=utf8mb4
 
 # CORS（生产环境改为具体域名）
 ALLOWED_ORIGINS=*

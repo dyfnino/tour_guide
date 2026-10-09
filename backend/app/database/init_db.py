@@ -26,7 +26,7 @@ load_dotenv()
 def get_db_connection_info():
     db_url = os.getenv(
         "DATABASE_URL",
-        "mysql+aiomysql://root:123456@localhost:3306/guide?charset=utf8mb4"
+        "mysql+aiomysql://root:admin123!@10.17.104.155:3306/guide?charset=utf8mb4"
     )
 
     try:
@@ -36,7 +36,7 @@ def get_db_connection_info():
         password = url.password
         if not password:
             print(f"[WARN] DATABASE_URL 中未包含密码，已回退使用默认密码")
-            password = "123456"
+            password = "admin123!"
 
         return {
             "host": url.host or "localhost",

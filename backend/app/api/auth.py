@@ -116,6 +116,7 @@ async def wechat_login(payload: WechatProfile, db: AsyncSession = Depends(get_db
                 timeout=8,
             )
             data = resp.json()
+            print("用户登录返回:{}",data)
             if data.get("errcode"):
                 raise HTTPException(status_code=401, detail=f"微信登录失败: {data.get('errmsg')}")
             openid = data.get("openid")

@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # 获取数据库URL
-DATABASE_URL = os.getenv("DATABASE_URL", "mysql+aiomysql://root:@localhost:3306/guideshope")
+DATABASE_URL = os.getenv("DATABASE_URL", "mysql+aiomysql://root:@10.17.104.155:3306/guideshope")
 
 # 创建异步引擎
 async_engine = create_async_engine(

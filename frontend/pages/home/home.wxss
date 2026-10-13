@@ -190,6 +190,7 @@
 
 .specialty-list {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
 }
 
@@ -198,6 +199,7 @@
   border-radius: 16rpx;
   overflow: hidden;
   background-color: #fff;
+  margin-bottom: 16rpx;
 }
 
 .specialty-image {
@@ -229,9 +231,20 @@
 .specialty-price {
   font-size: 24rpx;
   font-weight: bold;
+  color: #ff4d4f;
 }
 
 .specialty-tag {
   font-size: 20rpx;
   color: #8c8c8c;
 }
+
+/* 空态提示 */
+.empty-tip {
+  width: 100%;
+  text-align: center;
+  color: #bfbfbf;
+  font-size: 26rpx;
+  padding: 40rpx 0;
+}
+

@@ -10,15 +10,30 @@
     </view>
     <view class="form-row">
       <text class="label">省份</text>
-      <input class="input" placeholder="省" value="{{form.province}}" data-field="province" bindinput="onInput" />
+      <picker class="picker" mode="region" value="{{region}}" bindchange="onRegionChange">
+        <view class="picker-value">
+          <text class="{{form.province ? 'value-text' : 'placeholder'}}">{{form.province || '请选择省份'}}</text>
+          <text class="picker-arrow">›</text>
+        </view>
+      </picker>
     </view>
     <view class="form-row">
       <text class="label">城市</text>
-      <input class="input" placeholder="市" value="{{form.city}}" data-field="city" bindinput="onInput" />
+      <picker class="picker" mode="region" value="{{region}}" bindchange="onRegionChange">
+        <view class="picker-value">
+          <text class="{{form.city ? 'value-text' : 'placeholder'}}">{{form.city || '请选择城市'}}</text>
+          <text class="picker-arrow">›</text>
+        </view>
+      </picker>
     </view>
     <view class="form-row">
       <text class="label">区县</text>
-      <input class="input" placeholder="区/县" value="{{form.district}}" data-field="district" bindinput="onInput" />
+      <picker class="picker" mode="region" value="{{region}}" bindchange="onRegionChange">
+        <view class="picker-value">
+          <text class="{{form.district ? 'value-text' : 'placeholder'}}">{{form.district || '请选择区县'}}</text>
+          <text class="picker-arrow">›</text>
+        </view>
+      </picker>
     </view>
     <view class="form-row">
       <text class="label">详细地址</text>

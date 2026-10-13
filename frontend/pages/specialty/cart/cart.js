@@ -130,5 +130,16 @@ Page({
     wx.navigateTo({
       url: '/pages/specialty/confirm/confirm'
   });
+  },
+
+  // 去逛逛：回到商品列表页
+  goShopping() {
+    const pages = getCurrentPages();
+    const prev = pages.length > 1 ? pages[pages.length - 2] : null;
+    if (prev && prev.route === 'pages/specialty/specialty') {
+      wx.navigateBack();
+    } else {
+      wx.navigateTo({ url: '/pages/specialty/specialty' });
+    }
   }
 });

@@ -33,6 +33,34 @@
   font-size: 28rpx;
 }
 
+/* 省市区选择器 */
+.picker {
+  flex: 1;
+}
+
+.picker-value {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 96rpx;
+}
+
+.value-text {
+  font-size: 28rpx;
+  color: #333;
+}
+
+.placeholder {
+  font-size: 28rpx;
+  color: #999;
+}
+
+.picker-arrow {
+  font-size: 32rpx;
+  color: #c0c0c0;
+  margin-left: 12rpx;
+}
+
 .save-btn {
   margin-top: 40rpx;
   height: 88rpx;

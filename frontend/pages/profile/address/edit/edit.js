@@ -12,6 +12,8 @@ Page({
       detail: '',
       is_default: false
     },
+    // 省市区选择器的选中值：['省', '市', '区']
+    region: [],
     submitting: false
   },
 
@@ -30,16 +32,22 @@ Page({
       const list = await listAddresses();
       const item = (list || []).find(a => a.id === id);
       if (item) {
+        const province = item.province || '';
+        const city = item.city || '';
+        const district = item.district || '';
+        // 只有三级都有值时才回填选择器，避免无效值导致选择器定位异常
+        const region = (province && city && district) ? [province, city, district] : [];
         this.setData({
           form: {
             name: item.name || '',
             phone: item.phone || '',
-            province: item.province || '',
-            city: item.city || '',
-            district: item.district || '',
+            province,
+            city,
+            district,
             detail: item.detail || '',
             is_default: !!item.is_default
-          }
+          },
+          region
         });
       }
     } catch (err) {
@@ -52,6 +60,20 @@ Page({
     this.setData({ [`form.${field}`]: e.detail.value });
   },
 
+  // 省市区三级联动选择
+  onRegionChange(e) {
+    const value = e.detail.value || [];
+    const province = value[0] || '';
+    const city = value[1] || '';
+    const district = value[2] || '';
+    this.setData({
+      'form.province': province,
+      'form.city': city,
+      'form.district': district,
+      region: [province, city, district]
+    });
+  },
+
   onToggleDefault(e) {
     this.setData({ 'form.is_default': e.detail.value });
   },
@@ -60,6 +82,7 @@ Page({
     const f = this.data.form;
     if (!f.name.trim()) return '请填写收货人姓名';
     if (!/^1\d{10}$/.test(f.phone.trim())) return '请填写正确的手机号';
+    if (!f.province || !f.city || !f.district) return '请选择所在地区';
     if (!f.detail.trim()) return '请填写详细地址';
     return null;
   },
@@ -73,10 +96,19 @@ Page({
     }
     this.setData({ submitting: true });
     try {
+      const payload = {
+        name: this.data.form.name.trim(),
+        phone: this.data.form.phone.trim(),
+        province: this.data.form.province,
+        city: this.data.form.city,
+        district: this.data.form.district,
+        detail: this.data.form.detail.trim(),
+        is_default: this.data.form.is_default
+      };
       if (this.data.id) {
-        await updateAddress(this.data.id, this.data.form);
+        await updateAddress(this.data.id, payload);
       } else {
-        await createAddress(this.data.form);
+        await createAddress(payload);
       }
       wx.showToast({ title: '保存成功', icon: 'success' });
       setTimeout(() => wx.navigateBack(), 800);

@@ -1,29 +1,41 @@
 <view class="specialty-container">
-  <!-- 分类导航 -->
-  <view class="category-nav">
-    <scroll-view scroll-x="{{true}}" class="category-scroll">
-      <view class="category-item {{selectedCategory === 'all' ? 'active' : ''}}" bindtap="selectCategory" data-category="all">全部</view>
-      <view class="category-item {{selectedCategory === 'food' ? 'active' : ''}}" bindtap="selectCategory" data-category="food">特色食品</view>
-      <view class="category-item {{selectedCategory === 'cultural' ? 'active' : ''}}" bindtap="selectCategory" data-category="cultural">文创产品</view>
-      <view class="category-item {{selectedCategory === 'craft' ? 'active' : ''}}" bindtap="selectCategory" data-category="craft">手工艺品</view>
-      <view class="category-item {{selectedCategory === 'local' ? 'active' : ''}}" bindtap="selectCategory" data-category="local">地方特产</view>
-    </scroll-view>
+  <!-- 商品分类（与导游考证页保持一致） -->
+  <view class="category-container">
+    <view class="category-list">
+      <view
+        wx:for="{{categories}}"
+        wx:key="key"
+        class="category-item {{selectedCategory === item.key ? 'active' : ''}}"
+        data-category="{{item.key}}"
+        bindtap="selectCategory"
+      >{{item.name}}</view>
+    </view>
   </view>
 
-  <!-- 产品列表 -->
+  <!-- 商品列表 -->
   <view class="product-list">
-    <view class="product-item card-shadow" wx:for="{{productList}}" wx:key="id" bindtap="onProductTap" data-id="{{item.id}}">
-      <image src="{{item.image}}" class="product-image" mode="aspectFill"></image>
-      <view class="product-info">
-        <text class="product-name">{{item.name}}</text>
-        <view class="product-footer">
-          <text class="product-price">{{item.price}}</text>
-          <view class="add-to-cart" bindtap="onAddToCart" data-id="{{item.id}}">
-            <text class="cart-icon">+</text>
+    <view
+      class="product-item card-shadow"
+      wx:for="{{productList}}"
+      wx:key="id"
+      data-id="{{item.id}}"
+      bindtap="onProductTap"
+    >
+      <view class="product-content">
+        <image src="{{item.image}}" class="product-image" mode="aspectFill"></image>
+        <view class="product-info">
+          <text class="product-name">{{item.name}}</text>
+          <text class="product-desc">{{item.desc}}</text>
+          <view class="product-footer">
+            <text class="product-price">{{item.price}}</text>
+            <view class="add-to-cart" catchtap="onAddToCart" data-id="{{item.id}}">
+              <text class="cart-plus">+</text>
+            </view>
           </view>
         </view>
       </view>
     </view>
+    <view class="empty-tip" wx:if="{{productList.length === 0}}">该分类下暂无商品</view>
   </view>
 
   <!-- 购物车浮动按钮 -->

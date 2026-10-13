@@ -34,6 +34,12 @@
 
   <!-- 功能入口 -->
   <view class="function-entry">
+    <view class="entry-item" bindtap="navigateToSpecialty">
+      <view class="entry-icon entry-icon-secondary">
+        <text class="icon-text">🛍️</text>
+      </view>
+      <text class="entry-title">特产与文创</text>
+    </view>
     <view class="entry-item" bindtap="navigateToGuideCert">
       <view class="entry-icon entry-icon-primary">
         <text class="icon-text">📚</text>
@@ -71,6 +77,28 @@
           </view>
         </view>
       </view>
+      <view class="empty-tip" wx:if="{{courseList.length === 0}}">暂无推荐课程</view>
+    </view>
+  </view>
+
+  <!-- 特产与文创 -->
+  <view class="specialty-section">
+    <view class="section-header">
+      <text class="section-title">特产与文创</text>
+      <text class="section-more" bindtap="onSpecialtyMoreTap">更多 <text class="arrow">›</text></text>
+    </view>
+    <view class="specialty-list">
+      <view class="specialty-item card-shadow" wx:for="{{specialtyList}}" wx:key="id" data-id="{{item.id}}" bindtap="onSpecialtyTap">
+        <image src="{{item.image}}" class="specialty-image" mode="aspectFill"></image>
+        <view class="specialty-info">
+          <text class="specialty-name">{{item.name}}</text>
+          <view class="specialty-footer">
+            <text class="specialty-price">{{item.price}}</text>
+            <text class="specialty-tag">{{item.tag}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="empty-tip" wx:if="{{specialtyList.length === 0}}">暂无特产与文创</view>
     </view>
   </view>
 </view>

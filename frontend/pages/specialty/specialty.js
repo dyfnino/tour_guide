@@ -5,7 +5,14 @@ Page({
     selectedCategory: 'all',
     allProducts: [],
     productList: [],
-    cartCount: 0
+    cartCount: 0,
+    categories: [
+      { key: 'all', name: '全部' },
+      { key: 'food', name: '特色食品' },
+      { key: 'creative', name: '文创产品' },
+      { key: 'craft', name: '手工艺品' },
+      { key: 'local', name: '地方特产' }
+    ]
   },
 
   onLoad() {
@@ -34,6 +41,7 @@ Page({
         id: p.id,
         name: p.name,
         image: p.image,
+        desc: p.description || (p.is_hot ? '热销推荐' : '匠心好物'),
         price: '¥' + p.price,
         category: p.category
       }));
@@ -48,7 +56,7 @@ Page({
   },
 
   onShareAppMessage() {
-    return { title: '特产商城', path: '/pages/specialty/specialty' };
+    return { title: '特产与文创', path: '/pages/specialty/specialty' };
   },
 
   // 选择分类
@@ -76,7 +84,6 @@ Page({
 
   // 添加到购物车
   async onAddToCart(e) {
-    e.stopPropagation();
     const productId = e.currentTarget.dataset.id;
     const product = this.data.allProducts.find(p => p.id === productId);
 

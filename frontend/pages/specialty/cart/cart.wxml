@@ -32,7 +32,7 @@
   <view class="empty-cart" wx:else>
     <text class="empty-icon">🛒</text>
     <text class="empty-text">购物车是空的</text>
-    <view class="go-shopping" bindtap="wx.switchTab" data-url="/pages/specialty/specialty">
+    <view class="go-shopping" bindtap="goShopping">
       <text>去逛逛</text>
     </view>
   </view>

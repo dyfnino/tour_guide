@@ -1,32 +1,318 @@
-// 后端 API 调用封装
-// 使用方式：const { listCourses } = require('../../utils/api.js');
+// // 后端 API 调用封装
+// // 使用方式：const { listCourses } = require('../../utils/api.js');
 
-const BASE_URL = 'https://django-pb2g-321426-9-1442307866.sh.run.tcloudbase.com/api';
+// const BASE_URL = 'https://django-pb2g-321426-9-1442307866.sh.run.tcloudbase.com/api';
 
+// function request(path, options = {}) {
+//   const token = wx.getStorageSync('token');
+//   const header = {
+//     'Content-Type': 'application/json',
+//     ...(options.header || {})
+//   };
+//   if (token && !String(token).startsWith('mock-')) {
+//     header['Authorization'] = `Bearer ${token}`;
+//   }
+//   return new Promise((resolve, reject) => {
+//     wx.request({
+//       url: BASE_URL + path,
+//       method: options.method || 'GET',
+//       data: options.data,
+//       header,
+//       timeout: options.timeout || 10000,
+//       success: (res) => {
+//         if (res.statusCode >= 200 && res.statusCode < 300) {
+//           resolve(res.data);
+//         } else {
+//           reject({ statusCode: res.statusCode, data: res.data });
+//         }
+//       },
+//       fail: reject
+//     });
+//   });
+// }
+
+// // ---- 鉴权 ----
+// const wechatLogin = (code) => request('/auth/wechat', { method: 'POST', data: { code } });
+// const getMe = () => request('/auth/me');
+// const updateProfile = (data) => request('/auth/me', { method: 'PUT', data });
+
+// // ---- 课程 ----
+// const listCourses = (params = {}) => {
+//   const qs = Object.keys(params).map(k => `${k}=${encodeURIComponent(params[k])}`).join('&');
+//   return request('/courses' + (qs ? `?${qs}` : ''));
+// };
+// const getCourse = (id) => request(`/courses/${id}`);
+
+// // ---- 题库与考试 ----
+// const listQuestions = (params = {}) => {
+//   const qs = Object.keys(params).map(k => `${k}=${encodeURIComponent(params[k])}`).join('&');
+//   return request('/questions' + (qs ? `?${qs}` : ''));
+// };
+// const startExam = (data = {}) => request('/exams/start', { method: 'POST', data });
+// const submitExam = (examId, answers) =>
+//   request(`/exams/${examId}/submit`, { method: 'POST', data: { answers } });
+
+// // ---- 直播 ----
+// const listLives = (params = {}) => {
+//   const qs = Object.keys(params).map(k => `${k}=${encodeURIComponent(params[k])}`).join('&');
+//   return request('/live/lives' + (qs ? `?${qs}` : ''));
+// };
+// const listReplays = (params = {}) => {
+//   const qs = Object.keys(params).map(k => `${k}=${encodeURIComponent(params[k])}`).join('&');
+//   return request('/live/replays' + (qs ? `?${qs}` : ''));
+// };
+// const getReplay = (id) => request(`/live/replays/${id}`);
+// const incrementReplayView = (id) =>
+//   request(`/live/replays/${id}/view`, { method: 'POST' });
+// const listLiveMessages = (liveId) => request(`/live/lives/${liveId}/messages`);
+// const sendLiveMessage = (liveId, content) =>
+//   request(`/live/lives/${liveId}/messages`, { method: 'POST', data: { content } });
+
+// // ---- 商品 ----
+// const listProducts = (params = {}) => {
+//   const qs = Object.keys(params).map(k => `${k}=${encodeURIComponent(params[k])}`).join('&');
+//   return request('/products' + (qs ? `?${qs}` : ''));
+// };
+// const getProduct = (id) => request(`/products/${id}`);
+
+// // ---- 订单 ----
+// // 创建商品订单
+// const createProductOrder = (data) =>
+//   request('/orders', { method: 'POST', data });
+// const createCourseOrder = (courseId) =>
+//   request('/orders/course', { method: 'POST', data: { course_id: courseId } });
+// const payOrder = (orderId) =>
+//   request(`/orders/${orderId}`, { method: 'PUT', data: { status: 'paid' } });
+// // 真实支付：发起 JSAPI 下单，拿到 wx.requestPayment 所需参数
+// const prepayOrder = (orderId) =>
+//   request(`/orders/${orderId}/pay`, { method: 'POST' });
+// // Mock 模式下的"模拟支付成功"接口（仅 WX_PAY_MOCK=1 可用）
+// const mockPaidOrder = (orderId) =>
+//   request(`/orders/${orderId}/mock-paid`, { method: 'POST' });
+// const getOrder = (orderId) => request(`/orders/${orderId}`);
+// // 轮询订单状态：3次每1.5秒，命中 paid 即返回；都没命中返回最后一次的状态
+// const pollOrderPaid = async (orderId, times = 3, interval = 1500) => {
+//   for (let i = 0; i < times; i++) {
+//     try {
+//       const o = await getOrder(orderId);
+//       if (o && (o.status === 'paid' || o.status === 'completed')) return o;
+//     } catch (e) { /* ignore */ }
+//     if (i < times - 1) {
+//       await new Promise(r => setTimeout(r, interval));
+//     }
+//   }
+//   try { return await getOrder(orderId); } catch (e) { return null; }
+// };
+// const confirmReceipt = (orderId) =>
+//   request(`/orders/${orderId}`, { method: 'PUT', data: { status: 'completed' } });
+
+// // 取消订单（仅未支付）
+// const cancelOrder = (orderId) =>
+//   request(`/orders/${orderId}`, { method: 'PUT', data: { status: 'cancelled' } });
+
+// // 退款相关
+// const applyRefund = (orderId, data = {}) =>
+//   request(`/orders/${orderId}/refund`, { method: 'POST', data });
+// const listOrderRefunds = (orderId) => request(`/orders/${orderId}/refunds`);
+// // Mock 模式：把订单的所有进行中退款单一键置为已退款
+// const mockRefundedOrder = (orderId) =>
+//   request(`/orders/${orderId}/mock-refunded`, { method: 'POST' });
+
+// // ---- 收货地址簿 ----
+// const listAddresses = () => request('/addresses');
+// const createAddress = (data) => request('/addresses', { method: 'POST', data });
+// const updateAddress = (id, data) => request(`/addresses/${id}`, { method: 'PUT', data });
+// const setDefaultAddress = (id) => request(`/addresses/${id}/default`, { method: 'POST' });
+// const deleteAddress = (id) => request(`/addresses/${id}`, { method: 'DELETE' });
+
+// // ---- 购物车（服务端） ----
+// const getCart = () => request('/cart');
+// const addToCart = (productId, quantity = 1) =>
+//   request('/cart', { method: 'POST', data: { product_id: productId, quantity } });
+// const updateCartItem = (itemId, data) =>
+//   request(`/cart/${itemId}`, { method: 'PUT', data });
+// const batchSelectCart = (selected, ids) =>
+//   request('/cart/select', { method: 'POST', data: { selected, ids } });
+// const deleteCartItem = (itemId) =>
+//   request(`/cart/${itemId}`, { method: 'DELETE' });
+// const clearCart = (onlySelected = false) =>
+//   request(`/cart${onlySelected ? '?only_selected=true' : ''}`, { method: 'DELETE' });
+
+// // ---- AI 测评 ----
+// const aiChat = (data) => request('/ai-test/chat', { method: 'POST', data, timeout: 60000 });
+// const aiEvaluate = (data) => request('/ai-test/evaluate', { method: 'POST', data, timeout: 60000 });
+
+// // ---- AI 流式（SSE over chunked）----
+// // 通用流式请求：解析 text/event-stream，逐事件回调 onEvent(obj)；返回 Promise
+// function streamRequest(path, data, callbacks = {}) {
+//   const { onEvent } = callbacks;
+//   const token = wx.getStorageSync('token');
+//   const header = { 'Content-Type': 'application/json' };
+//   if (token && !String(token).startsWith('mock-')) {
+//     header['Authorization'] = `Bearer ${token}`;
+//   }
+//   const ab2str = (buf) => {
+//     if (typeof TextDecoder !== 'undefined') {
+//       return new TextDecoder('utf-8').decode(new Uint8Array(buf));
+//     }
+//     let s = '';
+//     const bytes = new Uint8Array(buf);
+//     for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+//     try { return decodeURIComponent(escape(s)); } catch (e) { return s; }
+//   };
+//   return new Promise((resolve, reject) => {
+//     let buffer = '';
+//     let finished = false;
+//     const drain = () => {
+//       let idx;
+//       while ((idx = buffer.indexOf('\n\n')) >= 0) {
+//         const frame = buffer.slice(0, idx);
+//         buffer = buffer.slice(idx + 2);
+//         const lines = frame.split('\n');
+//         for (const line of lines) {
+//           const trimmed = line.trim();
+//           if (!trimmed.startsWith('data:')) continue;
+//           const payload = trimmed.slice(5).trim();
+//           if (!payload || payload === '[DONE]') continue;
+//           try {
+//             const obj = JSON.parse(payload);
+//             if (onEvent) onEvent(obj);
+//           } catch (e) { /* 忽略半包/坏帧 */ }
+//         }
+//       }
+//     };
+//     const task = wx.request({
+//       url: BASE_URL + path,
+//       method: 'POST',
+//       data,
+//       header,
+//       timeout: 90000,
+//       enableChunked: true,
+//       responseType: 'text',
+//       success: () => { finished = true; drain(); resolve(); },
+//       fail: (err) => { if (!finished) reject(err); }
+//     });
+//     if (task && typeof task.onChunkReceived === 'function') {
+//       task.onChunkReceived((res) => {
+//         try { buffer += ab2str(res.data); drain(); } catch (e) { /* ignore */ }
+//       });
+//     } else {
+//       reject({ errMsg: 'chunked-unsupported' });
+//     }
+//   });
+// }
+// const aiChatStream = (data, callbacks) => streamRequest('/ai-test/chat/stream', data, callbacks);
+// const aiEvaluateStream = (data, callbacks) => streamRequest('/ai-test/evaluate/stream', data, callbacks);
+// const listAiTests = () => request('/ai-test/tests');
+// // 上传单个文件（图片或音频）到 /ai-test/upload，返回 {path, url}
+// const uploadAiMedia = (filePath, name = 'file') => {
+//   const token = wx.getStorageSync('token');
+//   const header = {};
+//   if (token && !String(token).startsWith('mock-')) {
+//     header['Authorization'] = `Bearer ${token}`;
+//   }
+//   return new Promise((resolve, reject) => {
+//     wx.uploadFile({
+//       url: BASE_URL + '/ai-test/upload',
+//       filePath,
+//       name,
+//       header,
+//       success: (res) => {
+//         if (res.statusCode >= 200 && res.statusCode < 300) {
+//           try {
+//             const data = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
+//             resolve(data);
+//           } catch (e) { reject(e); }
+//         } else {
+//           reject({ statusCode: res.statusCode, data: res.data });
+//         }
+//       },
+//       fail: reject
+//     });
+//   });
+// };
+
+// // ---- 我的（学习进度） ----
+// const myCoursesDetail = () => request('/me/courses/detail');
+// const enrollCourse = (courseId) =>
+//   request(`/me/courses/${courseId}/enroll`, { method: 'POST' });
+// const updateProgress = (courseId, progress) =>
+//   request(`/me/courses/${courseId}/progress`, { method: 'PUT', data: { progress } });
+
+// module.exports = {
+//   BASE_URL,
+//   request,
+//   wechatLogin, getMe, updateProfile,
+//   listCourses, getCourse,
+//   listQuestions, startExam, submitExam,
+//   listLives, listReplays, getReplay, listLiveMessages, sendLiveMessage,
+//   incrementReplayView,
+//   listProducts, getProduct,
+//   myCoursesDetail, enrollCourse, updateProgress,
+//   createProductOrder,
+//   createCourseOrder, payOrder, prepayOrder, mockPaidOrder, getOrder, confirmReceipt, pollOrderPaid,
+//   cancelOrder, applyRefund, listOrderRefunds, mockRefundedOrder,
+//   listAddresses, createAddress, updateAddress, setDefaultAddress, deleteAddress,
+//   getCart, addToCart, updateCartItem, batchSelectCart, deleteCartItem, clearCart,
+//   aiChat, aiEvaluate, listAiTests, uploadAiMedia,
+//   aiChatStream, aiEvaluateStream,
+// };
+// 后端 API 调用封装 (已改造为微信云托管调用方式)
+// 使用方式：const { listCourses } = require('../../utils/api.js'); // 其他文件无需任何修改
+
+// ==================== 云托管配置 ====================
+const ENV_ID = 'prod-d9gdz4gnae844e735';
+const SERVICE_NAME = 'django-pb2g';
+
+// 初始化云开发环境（确保只初始化一次）
+if (!wx.cloud._env || wx.cloud._env !== ENV_ID) {
+  wx.cloud.init({
+    env: ENV_ID,
+    traceUser: true
+  });
+}
+// ======================================================
+
+/**
+ * 通用请求方法（底层由 wx.request 改为 wx.cloud.callContainer）
+ */
 function request(path, options = {}) {
   const token = wx.getStorageSync('token');
+  
+  // 注意：云托管中 header 字段名建议使用全小写或遵循 HTTP 规范
   const header = {
-    'Content-Type': 'application/json',
+    'content-type': 'application/json',
     ...(options.header || {})
   };
+  
   if (token && !String(token).startsWith('mock-')) {
     header['Authorization'] = `Bearer ${token}`;
   }
+
   return new Promise((resolve, reject) => {
-    wx.request({
-      url: BASE_URL + path,
+    wx.cloud.callContainer({
+      config: {
+        env: ENV_ID
+      },
+      path: '/api' + path, // ⚠️ 拼接 /api 前缀（原 BASE_URL 中包含 /api）
       method: options.method || 'GET',
       data: options.data,
-      header,
+      header: {
+        'X-WX-SERVICE': SERVICE_NAME, // 必填：云托管服务名称
+        ...header
+      },
       timeout: options.timeout || 10000,
       success: (res) => {
+        // callContainer 返回的 res 结构与 wx.request 基本一致
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve(res.data);
         } else {
           reject({ statusCode: res.statusCode, data: res.data });
         }
       },
-      fail: reject
+      fail: (err) => {
+        reject(err);
+      }
     });
   });
 }
@@ -76,21 +362,18 @@ const listProducts = (params = {}) => {
 const getProduct = (id) => request(`/products/${id}`);
 
 // ---- 订单 ----
-// 创建商品订单
 const createProductOrder = (data) =>
   request('/orders', { method: 'POST', data });
 const createCourseOrder = (courseId) =>
   request('/orders/course', { method: 'POST', data: { course_id: courseId } });
 const payOrder = (orderId) =>
   request(`/orders/${orderId}`, { method: 'PUT', data: { status: 'paid' } });
-// 真实支付：发起 JSAPI 下单，拿到 wx.requestPayment 所需参数
 const prepayOrder = (orderId) =>
   request(`/orders/${orderId}/pay`, { method: 'POST' });
-// Mock 模式下的"模拟支付成功"接口（仅 WX_PAY_MOCK=1 可用）
 const mockPaidOrder = (orderId) =>
   request(`/orders/${orderId}/mock-paid`, { method: 'POST' });
 const getOrder = (orderId) => request(`/orders/${orderId}`);
-// 轮询订单状态：3次每1.5秒，命中 paid 即返回；都没命中返回最后一次的状态
+
 const pollOrderPaid = async (orderId, times = 3, interval = 1500) => {
   for (let i = 0; i < times; i++) {
     try {
@@ -103,10 +386,9 @@ const pollOrderPaid = async (orderId, times = 3, interval = 1500) => {
   }
   try { return await getOrder(orderId); } catch (e) { return null; }
 };
+
 const confirmReceipt = (orderId) =>
   request(`/orders/${orderId}`, { method: 'PUT', data: { status: 'completed' } });
-
-// 取消订单（仅未支付）
 const cancelOrder = (orderId) =>
   request(`/orders/${orderId}`, { method: 'PUT', data: { status: 'cancelled' } });
 
@@ -114,7 +396,6 @@ const cancelOrder = (orderId) =>
 const applyRefund = (orderId, data = {}) =>
   request(`/orders/${orderId}/refund`, { method: 'POST', data });
 const listOrderRefunds = (orderId) => request(`/orders/${orderId}/refunds`);
-// Mock 模式：把订单的所有进行中退款单一键置为已退款
 const mockRefundedOrder = (orderId) =>
   request(`/orders/${orderId}/mock-refunded`, { method: 'POST' });
 
@@ -143,14 +424,14 @@ const aiChat = (data) => request('/ai-test/chat', { method: 'POST', data, timeou
 const aiEvaluate = (data) => request('/ai-test/evaluate', { method: 'POST', data, timeout: 60000 });
 
 // ---- AI 流式（SSE over chunked）----
-// 通用流式请求：解析 text/event-stream，逐事件回调 onEvent(obj)；返回 Promise
 function streamRequest(path, data, callbacks = {}) {
   const { onEvent } = callbacks;
   const token = wx.getStorageSync('token');
-  const header = { 'Content-Type': 'application/json' };
+  const header = { 'content-type': 'application/json' };
   if (token && !String(token).startsWith('mock-')) {
     header['Authorization'] = `Bearer ${token}`;
   }
+  
   const ab2str = (buf) => {
     if (typeof TextDecoder !== 'undefined') {
       return new TextDecoder('utf-8').decode(new Uint8Array(buf));
@@ -160,9 +441,11 @@ function streamRequest(path, data, callbacks = {}) {
     for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
     try { return decodeURIComponent(escape(s)); } catch (e) { return s; }
   };
+
   return new Promise((resolve, reject) => {
     let buffer = '';
     let finished = false;
+    
     const drain = () => {
       let idx;
       while ((idx = buffer.indexOf('\n\n')) >= 0) {
@@ -181,17 +464,26 @@ function streamRequest(path, data, callbacks = {}) {
         }
       }
     };
-    const task = wx.request({
-      url: BASE_URL + path,
+
+    // 使用 callContainer 处理流式请求
+    const task = wx.cloud.callContainer({
+      config: {
+        env: ENV_ID
+      },
+      path: '/api' + path, // ⚠️ 拼接 /api 前缀
       method: 'POST',
       data,
-      header,
+      header: {
+        'X-WX-SERVICE': SERVICE_NAME,
+        ...header
+      },
       timeout: 90000,
       enableChunked: true,
       responseType: 'text',
       success: () => { finished = true; drain(); resolve(); },
       fail: (err) => { if (!finished) reject(err); }
     });
+
     if (task && typeof task.onChunkReceived === 'function') {
       task.onChunkReceived((res) => {
         try { buffer += ab2str(res.data); drain(); } catch (e) { /* ignore */ }
@@ -201,10 +493,12 @@ function streamRequest(path, data, callbacks = {}) {
     }
   });
 }
+
 const aiChatStream = (data, callbacks) => streamRequest('/ai-test/chat/stream', data, callbacks);
 const aiEvaluateStream = (data, callbacks) => streamRequest('/ai-test/evaluate/stream', data, callbacks);
 const listAiTests = () => request('/ai-test/tests');
-// 上传单个文件（图片或音频）到 /ai-test/upload，返回 {path, url}
+
+// 上传单个文件（图片或音频）到 /ai-test/upload
 const uploadAiMedia = (filePath, name = 'file') => {
   const token = wx.getStorageSync('token');
   const header = {};
@@ -212,22 +506,28 @@ const uploadAiMedia = (filePath, name = 'file') => {
     header['Authorization'] = `Bearer ${token}`;
   }
   return new Promise((resolve, reject) => {
-    wx.uploadFile({
-      url: BASE_URL + '/ai-test/upload',
-      filePath,
-      name,
-      header,
-      success: (res) => {
-        if (res.statusCode >= 200 && res.statusCode < 300) {
-          try {
-            const data = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
-            resolve(data);
-          } catch (e) { reject(e); }
-        } else {
-          reject({ statusCode: res.statusCode, data: res.data });
-        }
-      },
-      fail: reject
+    // ⚠️ 注意：wx.cloud.callContainer 不支持直接传 filePath 进行文件上传
+    // 对于云托管的文件上传，必须使用 wx.cloud.uploadFile 配合云存储，或者使用 wx.uploadFile 走外网
+    // 如果你的 Django 后端需要接收文件，这里保留 wx.uploadFile 但需要你的云托管开启公网访问并配置域名
+    // 如果希望纯内网调用，建议先将文件传到云存储，再将 fileID 传给后端
+    
+    // 方案A：如果云托管开启了公网访问（需在小程序后台配置合法域名）
+    // wx.uploadFile({ url: 'https://你的公网域名/api/ai-test/upload', ... })
+    
+    // 方案B（推荐）：先传到云存储，再调接口传 fileID
+    wx.cloud.uploadFile({
+      cloudPath: `ai-media/${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      filePath: filePath,
+    }).then(uploadRes => {
+      // 上传成功，将 fileID 通过普通接口发给后端
+      return request('/ai-test/upload', {
+        method: 'POST',
+        data: { file_id: uploadRes.fileID, name: name }
+      });
+    }).then(res => {
+      resolve(res);
+    }).catch(err => {
+      reject(err);
     });
   });
 };
@@ -240,7 +540,7 @@ const updateProgress = (courseId, progress) =>
   request(`/me/courses/${courseId}/progress`, { method: 'PUT', data: { progress } });
 
 module.exports = {
-  BASE_URL,
+  // BASE_URL 不再导出，因为云托管不使用 URL
   request,
   wechatLogin, getMe, updateProfile,
   listCourses, getCourse,
